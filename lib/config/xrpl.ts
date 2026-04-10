@@ -1,0 +1,13 @@
+export const XRPL_CONFIG = {
+  WSS_URL: "wss://xrplcluster.com",
+  NETWORK: "mainnet",
+  RLUSD_ISSUER: "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+  RLUSD_CURRENCY_HEX: "524C555344000000000000000000000000000000",
+  MIN_XRP_RESERVE: 1,
+  MIN_DEPOSIT_USD: 5,
+  MIN_BET_USD: 1,
+  MAX_BET_USD: 500,
+  PLATFORM_FEE_BPS: 500,
+} as const;
+
+export type XrplConfig = typeof XRPL_CONFIG;

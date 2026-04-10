@@ -1,0 +1,40 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/create-daily-morning-market",
+      "schedule": "50 5 * * *"
+    },
+    {
+      "path": "/api/cron/create-daily-noon-market",
+      "schedule": "50 11 * * *"
+    },
+    {
+      "path": "/api/cron/create-daily-night-market",
+      "schedule": "50 17 * * *"
+    },
+    {
+      "path": "/api/cron/create-weekly-market",
+      "schedule": "5 0 * * 1"
+    },
+    {
+      "path": "/api/cron/resolve-markets",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/check-deposits",
+      "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/cron/confirm-payouts",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/update-leaderboard",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/update-oracle-titles",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}

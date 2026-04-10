@@ -1,0 +1,100 @@
+import { COPY } from "@/lib/config/copy";
+
+const MINUTE = 60 * 1000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+export function formatRelative(iso: string, now = Date.now()): string {
+  const then = new Date(iso).getTime();
+  const diff = Math.max(0, now - then);
+  if (diff < MINUTE) {
+    return `${Math.floor(diff / 1000)}${COPY.liveFeed.secondsAgo}`;
+  }
+  if (diff < HOUR) {
+    return `${Math.floor(diff / MINUTE)}${COPY.liveFeed.minutesAgo}`;
+  }
+  if (diff < DAY) {
+    return `${Math.floor(diff / HOUR)}${COPY.liveFeed.hoursAgo}`;
+  }
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function formatRemaining(endIso: string, now = Date.now()): string {
+  const end = new Date(endIso).getTime();
+  const diff = end - now;
+  if (diff <= 0) return "0m";
+  const h = Math.floor(diff / HOUR);
+  const m = Math.floor((diff % HOUR) / MINUTE);
+  if (h > 0) return `${h}h ${m}m`;
+  const s = Math.floor((diff % MINUTE) / 1000);
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+export function msUntil(endIso: string, now = Date.now()): number {
+  return Math.max(0, new Date(endIso).getTime() - now);
+}
+
+export function isLocked(endIso: string, lockBeforeMs = 5 * MINUTE): boolean {
+  return msUntil(endIso) <= lockBeforeMs;
+}
+
+export function slotStartUtc(
+  slot: "morning" | "noon" | "night",
+  date = new Date(),
+): Date {
+  const hours = slot === "morning" ? 6 : slot === "noon" ? 12 : 18;
+  const d = new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      hours,
+      0,
+      0,
+      0,
+    ),
+  );
+  return d;
+}
+
+export function slotEndUtc(
+  slot: "morning" | "noon" | "night",
+  date = new Date(),
+): Date {
+  const start = slotStartUtc(slot, date);
+  return new Date(start.getTime() + 24 * HOUR);
+}
+
+export function weekStartUtc(date = new Date()): Date {
+  const d = new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      0,
+      5,
+      0,
+      0,
+    ),
+  );
+  const day = d.getUTCDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setUTCDate(d.getUTCDate() + diff);
+  return d;
+}
+
+export function weekEndUtc(date = new Date()): Date {
+  const start = weekStartUtc(date);
+  const end = new Date(start.getTime() + 7 * DAY);
+  end.setUTCMinutes(59, 59, 0);
+  end.setUTCHours(23);
+  return end;
+}
+
+export function todayUtcDateString(date = new Date()): string {
+  return date.toISOString().slice(0, 10);
+}
