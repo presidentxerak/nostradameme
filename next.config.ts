@@ -8,11 +8,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.vercel.app" },
     ],
   },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "2mb",
-    },
-  },
 };
 
 export default nextConfig;

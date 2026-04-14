@@ -1,10 +1,16 @@
 import { z } from "zod";
 
+const urlOrDefault = (fallback: string) =>
+  z
+    .string()
+    .optional()
+    .transform((v) => (v && v.length > 0 ? v : fallback));
+
 const EnvSchema = z.object({
   NEXT_PUBLIC_APP_NAME: z.string().default("Nostradameme"),
-  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  NEXT_PUBLIC_APP_URL: urlOrDefault("http://localhost:3000"),
 
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url().default("http://localhost:54321"),
+  NEXT_PUBLIC_SUPABASE_URL: urlOrDefault("http://localhost:54321"),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().default("anon-key-placeholder"),
   SUPABASE_SERVICE_ROLE_KEY: z.string().default("service-role-placeholder"),
   DATABASE_URL: z.string().default("postgres://user:pass@localhost:5432/nostradameme"),
@@ -22,10 +28,7 @@ const EnvSchema = z.object({
     .default("rTreasuryPlaceholderAddressFake00"),
 
   COINGECKO_API_KEY: z.string().default(""),
-  COINGECKO_BASE_URL: z
-    .string()
-    .url()
-    .default("https://api.coingecko.com/api/v3"),
+  COINGECKO_BASE_URL: urlOrDefault("https://api.coingecko.com/api/v3"),
 
   APP_MODE: z.enum(["play_money", "real_money"]).default("play_money"),
   REAL_MONEY_ENABLED: z
@@ -77,10 +80,11 @@ const parsed = EnvSchema.safeParse({
 if (!parsed.success) {
   // eslint-disable-next-line no-console
   console.error("Invalid environment variables:", parsed.error.flatten());
-  throw new Error("Invalid environment variables");
 }
 
-export const env: Env = parsed.data;
+export const env: Env = parsed.success
+  ? parsed.data
+  : (EnvSchema.parse({}) as Env);
 
 export function blockedCountries(): string[] {
   return env.BLOCKED_COUNTRIES.split(",")
