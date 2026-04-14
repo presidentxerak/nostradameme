@@ -18,7 +18,7 @@ export function SlotTabs({
   availability,
   opensInLabel,
 }: SlotTabsProps) {
-  const slots: { key: SlotKey; meta: typeof COPY.slots.morning }[] = [
+  const slots: { key: SlotKey; meta: { emoji: string; label: string; short: string } }[] = [
     { key: "morning", meta: COPY.slots.morning },
     { key: "noon", meta: COPY.slots.noon },
     { key: "night", meta: COPY.slots.night },
