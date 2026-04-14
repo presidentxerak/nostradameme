@@ -14,7 +14,7 @@ export async function getServerSupabase() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(values) {
+        setAll(values: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
           try {
             for (const { name, value, options } of values) {
               cookieStore.set(name, value, options);
