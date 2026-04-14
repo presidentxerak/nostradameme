@@ -2,17 +2,21 @@
 
 import { PrivyProvider } from "@privy-io/react-auth";
 import { PRIVY_CONFIG } from "@/lib/privy/config";
-import { useEffect } from "react";
 
 interface ProvidersProps {
   children: React.ReactNode;
 }
 
+function isValidPrivyAppId(id: string): boolean {
+  return Boolean(id) && !id.includes("placeholder") && id.length > 8;
+}
+
 export function Providers({ children }: ProvidersProps) {
-  useEffect(() => {
-    // After login, sync the profile row.
-    // No-op on first render; ensureProfile is called lazily.
-  }, []);
+  if (!isValidPrivyAppId(PRIVY_CONFIG.appId)) {
+    // During static generation or when env vars are missing,
+    // render children without Privy to avoid initialization crash.
+    return <>{children}</>;
+  }
   return (
     <PrivyProvider
       appId={PRIVY_CONFIG.appId}
