@@ -32,7 +32,7 @@ const EnvSchema = z.object({
     .string()
     .default("false")
     .transform((v) => v === "true"),
-  BLOCKED_COUNTRIES: z.string().default("FR"),
+  BLOCKED_COUNTRIES: z.string().default(""),
   CRON_SECRET: z.string().default("local-cron-secret"),
 
   FEATURE_ENABLE_PAYOUTS: z
