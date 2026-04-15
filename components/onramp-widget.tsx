@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { COPY } from "@/lib/config/copy";
@@ -51,16 +51,17 @@ export function OnrampWidget({ open, onOpenChange }: OnrampWidgetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
-        <h3 className="mb-1 font-display text-2xl text-accent-glow">
+        <SheetTitle className="mb-1 font-display text-2xl text-accent-glow">
           {COPY.depositSheet.title}
-        </h3>
-        <p className="mb-5 text-sm text-text-secondary">
+        </SheetTitle>
+        <SheetDescription className="mb-5 text-sm text-text-secondary">
           {COPY.depositSheet.subtitle}
-        </p>
-        <label className="mb-2 block text-xs text-text-muted">
+        </SheetDescription>
+        <label htmlFor="deposit-amount" className="mb-2 block text-xs text-text-muted">
           {COPY.depositSheet.amountLabel}
         </label>
         <Input
+          id="deposit-amount"
           type="text"
           inputMode="decimal"
           value={amount.toString()}

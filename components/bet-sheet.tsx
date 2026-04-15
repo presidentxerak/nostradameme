@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { AmountSelector } from "@/components/amount-selector";
 import { PayoutPreview } from "@/components/payout-preview";
@@ -67,6 +67,8 @@ export function BetSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
+        <SheetTitle className="sr-only">{COPY.bet.seal}</SheetTitle>
+        <SheetDescription className="sr-only">{market.question}</SheetDescription>
         <div className="flex items-center justify-between">
           <p className="text-sm text-text-secondary">{COPY.bet.youSay}:</p>
           <p

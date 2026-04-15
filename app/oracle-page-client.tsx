@@ -77,6 +77,7 @@ export function OraclePageClient(props: OraclePageClientProps) {
   const [sealed, setSealed] = useState<MarketSide | null>(null);
   const [onrampOpen, setOnrampOpen] = useState(false);
   const [revealVisible, setRevealVisible] = useState(false);
+  const [authPrompt, setAuthPrompt] = useState(false);
   const [userPositionSide, setUserPositionSide] = useState<MarketSide | null>(
     current?.userPositionSide ?? null,
   );
@@ -120,8 +121,8 @@ export function OraclePageClient(props: OraclePageClientProps) {
   const handleBet = useCallback(
     (side: MarketSide) => {
       if (!props.isAuthed) {
-        // Redirect to sign-in flow (Privy login is triggered by header button)
-        alert(COPY.auth.signInPrompt);
+        setAuthPrompt(true);
+        setTimeout(() => setAuthPrompt(false), 3000);
         return;
       }
       setBetSide(side);
@@ -160,7 +161,8 @@ export function OraclePageClient(props: OraclePageClientProps) {
 
   const handleAddFunds = useCallback(() => {
     if (!props.isAuthed) {
-      alert(COPY.auth.signInPrompt);
+      setAuthPrompt(true);
+      setTimeout(() => setAuthPrompt(false), 3000);
       return;
     }
     setBetOpen(false);
@@ -206,6 +208,12 @@ export function OraclePageClient(props: OraclePageClientProps) {
           {COPY.header.addFunds}
         </Button>
       </header>
+
+      {authPrompt && (
+        <div className="border-b border-accent bg-accent/20 px-4 py-3 text-center text-sm text-accent-glow">
+          {COPY.auth.signInPrompt}
+        </div>
+      )}
 
       {props.refUsername && (
         <div className="border-b border-border bg-accent/10 px-4 py-2 text-center text-xs text-accent-glow">
