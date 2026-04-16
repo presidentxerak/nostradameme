@@ -46,7 +46,7 @@ export function slotStartUtc(
   slot: "morning" | "noon" | "night",
   date = new Date(),
 ): Date {
-  const hours = slot === "morning" ? 6 : slot === "noon" ? 12 : 18;
+  const hours = slot === "morning" ? 7 : slot === "noon" ? 10 : 22;
   const d = new Date(
     Date.UTC(
       date.getUTCFullYear(),
@@ -66,7 +66,8 @@ export function slotEndUtc(
   date = new Date(),
 ): Date {
   const start = slotStartUtc(slot, date);
-  return new Date(start.getTime() + 24 * HOUR);
+  const durationHours = slot === "morning" ? 3 : slot === "noon" ? 12 : 9;
+  return new Date(start.getTime() + durationHours * HOUR);
 }
 
 export function weekStartUtc(date = new Date()): Date {

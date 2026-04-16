@@ -19,9 +19,9 @@ export const COPY = {
   },
 
   slots: {
-    morning: { key: "morning", emoji: "\u2600\ufe0f", label: "Morning Prophecy", short: "MATIN" },
-    noon: { key: "noon", emoji: "\ud83c\udf24\ufe0f", label: "Noon Prophecy", short: "MIDI" },
-    night: { key: "night", emoji: "\ud83c\udf19", label: "Night Prophecy", short: "SOIR" },
+    morning: { key: "morning", emoji: "\u2600\ufe0f", label: "Morning Prophecy \u00b7 9h\u201312h", short: "9H" },
+    noon: { key: "noon", emoji: "\ud83c\udf24\ufe0f", label: "Noon Prophecy \u00b7 12h\u201300h", short: "12H" },
+    night: { key: "night", emoji: "\ud83c\udf19", label: "Night Prophecy \u00b7 00h\u20139h", short: "00H" },
     weekly: { key: "weekly", emoji: "\u2728", label: "Weekly Prophecy", short: "WEEK" },
   },
 
