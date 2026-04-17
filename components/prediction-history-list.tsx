@@ -128,7 +128,6 @@ function HistoryItem({
   username: string;
 }) {
   const sideLabel = entry.side === "yes" ? COPY.bet.yes : COPY.bet.no;
-  const sideLabel = entry.side === "yes" ? COPY.bet.yes : COPY.bet.no;
 
   return (
     <Card className="border-border">
