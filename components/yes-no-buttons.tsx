@@ -19,33 +19,35 @@ export function YesNoButtons({
   return (
     <div className="grid grid-cols-2 gap-3">
       <motion.button
-        whileTap={{ scale: disabled ? 1 : 0.95 }}
-        whileHover={{ scale: disabled ? 1 : 1.03 }}
+        whileTap={{ scale: disabled ? 1 : 0.93 }}
+        whileHover={{ scale: disabled ? 1 : 1.04 }}
         disabled={disabled}
         onClick={() => onBet("yes")}
-        className="group relative flex h-16 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-yes/40 bg-gradient-to-b from-yes/20 to-yes-dim/10 text-yes-glow transition-all hover:border-yes-glow/60 disabled:opacity-40 animate-glow-yes"
+        className="group relative flex h-20 flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl border-2 border-yes/50 text-white transition-all hover:border-yes-glow disabled:opacity-30 animate-glow-yes"
+        style={{ background: "linear-gradient(135deg, #00cc9e 0%, #00d4ff 100%)" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yes/5 to-transparent bg-shimmer-size animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
-        <span className="relative font-display text-xl tracking-[0.2em] font-bold text-glow-yes">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent bg-shimmer-size animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
+        <span className="relative text-2xl font-bold tracking-[0.25em] text-glow-yes">
           {COPY.bet.yes}
         </span>
         {typeof yesPct === "number" && (
-          <span className="relative font-mono text-[10px] text-yes/80">{yesPct}%</span>
+          <span className="relative text-sm text-white/80">{yesPct}%</span>
         )}
       </motion.button>
       <motion.button
-        whileTap={{ scale: disabled ? 1 : 0.95 }}
-        whileHover={{ scale: disabled ? 1 : 1.03 }}
+        whileTap={{ scale: disabled ? 1 : 0.93 }}
+        whileHover={{ scale: disabled ? 1 : 1.04 }}
         disabled={disabled}
         onClick={() => onBet("no")}
-        className="group relative flex h-16 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-no/40 bg-gradient-to-b from-no/20 to-no-dim/10 text-no-glow transition-all hover:border-no-glow/60 disabled:opacity-40 animate-glow-no"
+        className="group relative flex h-20 flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl border-2 border-no/50 text-white transition-all hover:border-no-glow disabled:opacity-30 animate-glow-no"
+        style={{ background: "linear-gradient(135deg, #cc004e 0%, #ff2222 100%)" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-no/5 to-transparent bg-shimmer-size animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
-        <span className="relative font-display text-xl tracking-[0.2em] font-bold text-glow-no">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent bg-shimmer-size animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
+        <span className="relative text-2xl font-bold tracking-[0.25em] text-glow-no">
           {COPY.bet.no}
         </span>
         {typeof noPct === "number" && (
-          <span className="relative font-mono text-[10px] text-no/80">{noPct}%</span>
+          <span className="relative text-sm text-white/80">{noPct}%</span>
         )}
       </motion.button>
     </div>

@@ -19,16 +19,16 @@ const config: Config = {
           dim: "#6d28d9",
         },
         yes: {
-          DEFAULT: "#00e5a0",
-          glow: "#00ffbb",
-          dim: "#059669",
-          blue: "#06b6d4",
+          DEFAULT: "#00ffc8",
+          glow: "#00ffee",
+          dim: "#00cc9e",
+          blue: "#00d4ff",
         },
         no: {
-          DEFAULT: "#ff2d7a",
-          glow: "#ff5ca1",
-          dim: "#be185d",
-          red: "#ef4444",
+          DEFAULT: "#ff0062",
+          glow: "#ff3399",
+          dim: "#cc004e",
+          red: "#ff2222",
         },
         gold: {
           DEFAULT: "#f59e0b",
@@ -41,9 +41,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-display)", "var(--font-cinzel)", "serif"],
-        sans: ["var(--font-sans)", "sans-serif"],
-        mono: ["var(--font-mono)", "monospace"],
+        display: ["var(--font-display)", "serif"],
+        sans: ["var(--font-body)", "monospace"],
+        mono: ["var(--font-body)", "monospace"],
       },
       animation: {
         "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
@@ -60,12 +60,12 @@ const config: Config = {
           "50%": { transform: "translateY(-8px)" },
         },
         glowYes: {
-          "0%, 100%": { boxShadow: "0 0 15px rgba(0, 229, 160, 0.3), 0 0 30px rgba(6, 182, 212, 0.15)" },
-          "50%": { boxShadow: "0 0 25px rgba(0, 255, 187, 0.5), 0 0 50px rgba(6, 182, 212, 0.3)" },
+          "0%, 100%": { boxShadow: "0 0 15px rgba(0, 255, 200, 0.4), 0 0 40px rgba(0, 212, 255, 0.2)" },
+          "50%": { boxShadow: "0 0 30px rgba(0, 255, 238, 0.7), 0 0 60px rgba(0, 212, 255, 0.4)" },
         },
         glowNo: {
-          "0%, 100%": { boxShadow: "0 0 15px rgba(255, 45, 122, 0.3), 0 0 30px rgba(239, 68, 68, 0.15)" },
-          "50%": { boxShadow: "0 0 25px rgba(255, 92, 161, 0.5), 0 0 50px rgba(239, 68, 68, 0.3)" },
+          "0%, 100%": { boxShadow: "0 0 15px rgba(255, 0, 98, 0.4), 0 0 40px rgba(255, 34, 34, 0.2)" },
+          "50%": { boxShadow: "0 0 30px rgba(255, 51, 153, 0.7), 0 0 60px rgba(255, 34, 34, 0.4)" },
         },
         glowAccent: {
           "0%, 100%": { boxShadow: "0 0 20px rgba(139, 92, 246, 0.2)" },

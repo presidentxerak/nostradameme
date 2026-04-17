@@ -194,7 +194,7 @@ export function OraclePageClient(props: OraclePageClientProps) {
       <header className="z-40 flex items-center justify-between border-b border-border/40 bg-background/90 px-4 py-2 backdrop-blur-md">
         <Link
           href="/"
-          className="font-display text-base tracking-[0.2em] text-accent-glow text-glow-accent sm:text-lg"
+          className="font-display text-lg tracking-wider text-accent-glow text-glow-accent sm:text-xl"
         >
           {COPY.header.logo}
         </Link>
@@ -248,7 +248,7 @@ export function OraclePageClient(props: OraclePageClientProps) {
                 />
               ) : (
                 <div className="rounded-2xl border border-border/40 bg-surface/60 p-6 text-center">
-                  <p className="font-display text-sm text-text-muted">{COPY.oracle.silent}</p>
+                  <p className="text-sm text-text-muted">{COPY.oracle.silent}</p>
                 </div>
               )}
             </AnimatePresence>
@@ -262,7 +262,7 @@ export function OraclePageClient(props: OraclePageClientProps) {
               availability={availability}
             />
             <nav className="flex items-center justify-center">
-              <Link href="/profile" className="font-display text-[10px] tracking-[0.15em] uppercase text-text-muted hover:text-accent-glow transition-colors">
+              <Link href="/profile" className="text-xs tracking-widest uppercase text-text-muted hover:text-accent-glow transition-colors">
                 {COPY.profile.title}
               </Link>
             </nav>

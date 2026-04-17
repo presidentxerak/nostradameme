@@ -60,18 +60,18 @@ export function LiveFeedTicker({ feed }: LiveFeedTickerProps) {
 function FeedEntry({ entry }: { entry: LiveFeedEntry }) {
   const isYes = entry.side === "yes";
   return (
-    <div className="flex h-10 items-center gap-2 px-4 text-[10px]">
-      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isYes ? "bg-yes" : "bg-no"}`} />
-      <span className="truncate font-mono text-text-secondary">
+    <div className="flex h-10 items-center justify-center gap-3 px-4 text-xs">
+      <span className={`h-2 w-2 shrink-0 rounded-full ${isYes ? "bg-yes shadow-[0_0_6px_rgba(0,255,200,0.6)]" : "bg-no shadow-[0_0_6px_rgba(255,0,98,0.6)]"}`} />
+      <span className="text-text-secondary">
         {entry.username}
       </span>
-      <span className="font-mono text-text-primary">
+      <span className="text-text-primary font-bold">
         {formatUsd(entry.amount)}
       </span>
-      <span className={`font-display text-[10px] tracking-widest ${isYes ? "text-yes" : "text-no"}`}>
+      <span className={`font-bold tracking-wider ${isYes ? "text-yes text-glow-yes" : "text-no text-glow-no"}`}>
         {isYes ? COPY.bet.yes : COPY.bet.no}
       </span>
-      <span className="ml-auto text-text-muted">
+      <span className="text-text-muted">
         {formatRelative(entry.createdAt)}
       </span>
     </div>

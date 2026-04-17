@@ -40,7 +40,7 @@ export function SlotTabs({
                 : "border-border/60 bg-surface/40 text-text-muted hover:border-accent/30 hover:text-text-secondary",
             )}
           >
-            <span className="font-display tracking-[0.15em] uppercase text-[11px]">
+            <span className="text-sm font-bold tracking-widest">
               {meta.short}
             </span>
             {state === "locked" && (

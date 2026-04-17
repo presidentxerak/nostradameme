@@ -54,7 +54,10 @@ async function fetchSpotPrices(): Promise<Record<string, number>> {
       `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`,
       { next: { revalidate: 30 } },
     );
-    if (!res.ok) return {};
+    if (!res.ok) {
+      console.warn("[demo] CoinGecko responded with", res.status);
+      return {};
+    }
     const data = (await res.json()) as Record<
       string,
       Record<string, number> | undefined
@@ -64,6 +67,7 @@ async function fetchSpotPrices(): Promise<Record<string, number>> {
       const price = data[a.coingecko_id]?.usd;
       if (typeof price === "number") out[a.coingecko_id] = price;
     }
+    console.log("[demo] CoinGecko prices:", out);
     return out;
   } catch {
     return {};

@@ -58,24 +58,24 @@ export function ProphecyCard({
       exit={{ opacity: 0, y: -12 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="rounded-2xl border border-accent-dim/30 bg-surface/80 backdrop-blur-sm p-4 border-glow-accent">
+      <div className="rounded-2xl border border-accent-dim/30 bg-surface/80 backdrop-blur-sm p-5 border-glow-accent">
         {/* Header row */}
-        <div className="mb-1.5 flex items-center justify-between">
-          <span className="font-display text-[11px] uppercase tracking-[0.15em] text-accent-glow">
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-xs tracking-widest text-accent-glow uppercase">
             {slotMeta.label}
           </span>
-          <span className="font-mono text-[10px] text-text-muted">
+          <span className="text-xs text-text-muted">
             {market.asset.asset_key}
           </span>
         </div>
 
-        {/* Question */}
-        <h2 className="mb-1.5 font-display text-lg leading-snug text-text-primary sm:text-xl">
+        {/* Question — Jacquard font, first-letter capitalized only */}
+        <h2 className="mb-2 font-display text-xl leading-snug text-text-primary sm:text-2xl capitalize-first">
           {market.question}
         </h2>
 
         {/* Oracle quote */}
-        <p className="mb-3 text-xs italic text-text-muted leading-relaxed">
+        <p className="mb-4 text-sm italic text-text-muted leading-relaxed">
           &ldquo;{market.oracle_quote}&rdquo;
         </p>
 

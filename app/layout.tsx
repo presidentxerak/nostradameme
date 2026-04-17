@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Cinzel, Inter, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/app/providers";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { COPY } from "@/lib/config/copy";
@@ -12,23 +11,9 @@ const jacquard = localFont({
   display: "swap",
 });
 
-const cinzel = Cinzel({
-  subsets: ["latin"],
-  variable: "--font-cinzel",
-  weight: ["500", "700"],
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  weight: ["500", "600"],
+const silkscreen = localFont({
+  src: "../public/Silkscreen-Regular.ttf",
+  variable: "--font-body",
   display: "swap",
 });
 
@@ -63,7 +48,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${jacquard.variable} ${cinzel.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      className={`dark ${jacquard.variable} ${silkscreen.variable}`}
     >
       <body className="min-h-screen bg-background font-sans text-text-primary antialiased">
         <Providers>{children}</Providers>

@@ -14,7 +14,7 @@ export const COPY = {
   },
 
   header: {
-    logo: "NOSTRADAMEME",
+    logo: "Nostradameme",
     addFunds: "+ Add Funds",
     balanceLabel: "Balance",
   },

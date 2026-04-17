@@ -33,20 +33,28 @@ export function TugOfWar({ pools }: TugOfWarProps) {
   const orbPosition = `${Math.max(8, Math.min(92, yesPct))}%`;
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <motion.div
         animate={controls}
-        className="relative h-8 w-full overflow-hidden rounded-full border border-border bg-background/80"
+        className="relative h-10 w-full overflow-hidden rounded-full border border-border bg-background/80"
       >
-        {/* YES fill */}
+        {/* YES fill — vivid blue-green gradient */}
         <div
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-yes-dim/50 to-yes/30 transition-all duration-700"
-          style={{ width: `${yesPct}%` }}
+          className="absolute inset-y-0 left-0 transition-all duration-700"
+          style={{
+            width: `${yesPct}%`,
+            background: "linear-gradient(90deg, #00cc9e, #00d4ff)",
+            opacity: 0.6,
+          }}
         />
-        {/* NO fill */}
+        {/* NO fill — vivid red-magenta gradient */}
         <div
-          className="absolute inset-y-0 right-0 bg-gradient-to-l from-no-dim/50 to-no/30 transition-all duration-700"
-          style={{ width: `${100 - yesPct}%` }}
+          className="absolute inset-y-0 right-0 transition-all duration-700"
+          style={{
+            width: `${100 - yesPct}%`,
+            background: "linear-gradient(90deg, #ff2222, #cc004e)",
+            opacity: 0.6,
+          }}
         />
         {/* Center line */}
         <div className="absolute inset-y-1 left-1/2 w-px -translate-x-1/2 bg-text-muted/20" />
@@ -62,12 +70,12 @@ export function TugOfWar({ pools }: TugOfWarProps) {
           </div>
         </motion.div>
       </motion.div>
-      <div className="flex items-center justify-between font-mono text-[10px]">
-        <span className="text-yes-glow font-bold">{COPY.bet.yes} {yesPct}%</span>
-        <span className="text-text-muted">
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-yes-glow font-bold text-glow-yes">{COPY.bet.yes} {yesPct}%</span>
+        <span className="text-text-muted text-xs">
           {formatUsdCompact(pools.totalVolume)}
         </span>
-        <span className="text-no-glow font-bold">{100 - yesPct}% {COPY.bet.no}</span>
+        <span className="text-no-glow font-bold text-glow-no">{100 - yesPct}% {COPY.bet.no}</span>
       </div>
     </div>
   );
