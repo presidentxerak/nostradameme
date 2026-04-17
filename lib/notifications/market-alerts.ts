@@ -138,7 +138,7 @@ function findUpcomingSlot(
 function buildPushPayload(slot: MarketSlot) {
   const meta = COPY.slots[slot];
   return {
-    title: `${meta.emoji} ${meta.label}`,
+    title: meta.label,
     body: `A new prophecy opens in ${LEAD_MINUTES} minutes. The oracle awaits.`,
     url: "/",
     tag: `slot-${slot}`,
@@ -205,10 +205,10 @@ async function sendSlotEmail(
   if (!email) return false;
 
   const meta = COPY.slots[slot];
-  const subject = `${meta.emoji} ${meta.label} opens soon`;
+  const subject = `${meta.label} opens soon`;
   const html = `
     <div style="font-family:Inter,sans-serif;background:#0a0a0f;color:#f8fafc;padding:32px;">
-      <h1 style="color:#9d5cf0;">${meta.emoji} ${meta.label}</h1>
+      <h1 style="color:#9d5cf0;">${meta.label}</h1>
       <p>A new prophecy opens in ${LEAD_MINUTES} minutes.</p>
       <p>The oracle awaits. Do you dare to predict?</p>
       <p>
