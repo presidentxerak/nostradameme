@@ -11,8 +11,9 @@ interface ProphecySealedProps {
 
 export function ProphecySealed({ visible, side }: ProphecySealedProps) {
   if (!side) return null;
-  const color = side === "yes" ? "text-yes-glow" : "text-no-glow";
-  const emoji = side === "yes" ? COPY.bet.yesEmoji : COPY.bet.noEmoji;
+  const isYes = side === "yes";
+  const color = isYes ? "text-yes-glow text-glow-yes" : "text-no-glow text-glow-no";
+  const borderColor = isYes ? "border-yes/50" : "border-no/50";
   return (
     <AnimatePresence>
       {visible && (
@@ -30,16 +31,16 @@ export function ProphecySealed({ visible, side }: ProphecySealedProps) {
             transition={{ type: "spring", damping: 12, stiffness: 180 }}
             className="flex flex-col items-center gap-4"
           >
-            <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-accent bg-surface text-6xl shadow-2xl shadow-accent/50">
-              {"\u{1f56f}"}
+            <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-accent bg-surface shadow-2xl shadow-accent/50 border-glow-accent">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-accent-glow to-accent" />
             </div>
-            <h2 className="font-display text-2xl uppercase tracking-widest text-accent-glow">
+            <h2 className="font-display text-xl uppercase tracking-[0.2em] text-accent-glow text-glow-accent">
               {COPY.oracle.sealed}
             </h2>
             <div
-              className={`rounded-full border px-4 py-1 font-display text-lg ${color}`}
+              className={`rounded-lg border ${borderColor} px-6 py-2 font-display text-2xl tracking-[0.15em] ${color}`}
             >
-              {emoji} {side === "yes" ? COPY.bet.yes : COPY.bet.no}
+              {side === "yes" ? COPY.bet.yes : COPY.bet.no}
             </div>
           </motion.div>
         </motion.div>

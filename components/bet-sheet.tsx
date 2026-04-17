@@ -62,7 +62,6 @@ export function BetSheet({
   };
 
   const sideLabel = side === "yes" ? COPY.bet.yes : COPY.bet.no;
-  const sideEmoji = side === "yes" ? COPY.bet.yesEmoji : COPY.bet.noEmoji;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -78,7 +77,7 @@ export function BetSheet({
                 : "font-display text-xl text-no-glow"
             }
           >
-            {sideLabel} {sideEmoji}
+            {sideLabel}
           </p>
         </div>
 

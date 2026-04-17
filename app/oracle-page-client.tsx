@@ -189,12 +189,12 @@ export function OraclePageClient(props: OraclePageClientProps) {
   }, [userWon, pools, userPositionSide, userPositionAmount, resolution]);
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-background">
-      {/* Sticky header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md">
+    <div className="relative flex h-[100dvh] flex-col bg-background overflow-hidden">
+      {/* Compact sticky header */}
+      <header className="z-40 flex items-center justify-between border-b border-border/40 bg-background/90 px-4 py-2 backdrop-blur-md">
         <Link
           href="/"
-          className="font-display text-xl tracking-widest text-accent-glow"
+          className="font-display text-base tracking-[0.2em] text-accent-glow text-glow-accent sm:text-lg"
         >
           {COPY.header.logo}
         </Link>
@@ -203,20 +203,20 @@ export function OraclePageClient(props: OraclePageClientProps) {
           size="sm"
           variant="default"
           onClick={handleAddFunds}
-          className="whitespace-nowrap"
+          className="whitespace-nowrap text-xs h-8 px-3"
         >
           {COPY.header.addFunds}
         </Button>
       </header>
 
       {authPrompt && (
-        <div className="border-b border-accent bg-accent/20 px-4 py-3 text-center text-sm text-accent-glow">
+        <div className="border-b border-accent/30 bg-accent/10 px-4 py-2 text-center text-xs text-accent-glow">
           {COPY.auth.signInPrompt}
         </div>
       )}
 
       {props.refUsername && (
-        <div className="border-b border-border bg-accent/10 px-4 py-2 text-center text-xs text-accent-glow">
+        <div className="border-b border-border/30 bg-accent/5 px-4 py-1.5 text-center text-[10px] text-accent-glow">
           {COPY.share.refBanner(
             `@${props.refUsername}`,
             userPositionSide === "yes" ? COPY.bet.yes : COPY.bet.no,
@@ -224,47 +224,54 @@ export function OraclePageClient(props: OraclePageClientProps) {
         </div>
       )}
 
-      <main className="flex-1 px-4 py-4 pb-24">
-        <div className="mx-auto flex max-w-md flex-col gap-4">
-          {/* Oracle character */}
-          <OracleCharacter
-            pools={pools}
-            status={market?.status ?? "draft"}
-          />
+      {/* Main content — fits viewport between header and bottom bar */}
+      <main className="flex-1 overflow-y-auto px-3 pb-12 sm:px-4">
+        <div className="mx-auto flex h-full max-w-lg flex-col">
+          {/* Oracle — small on mobile, bigger on desktop */}
+          <div className="flex shrink-0 items-center justify-center py-2 sm:py-4">
+            <OracleCharacter
+              pools={pools}
+              status={market?.status ?? "draft"}
+              className="h-32 w-32 sm:h-44 sm:w-44"
+            />
+          </div>
 
-          {/* Active prophecy card */}
-          <AnimatePresence mode="wait">
-            {market && pools ? (
-              <ProphecyCard
-                key={market.id}
-                market={market}
-                pools={pools}
-                onBet={handleBet}
-              />
-            ) : (
-              <div className="rounded-2xl border border-border bg-surface/60 p-8 text-center text-text-muted">
-                {COPY.oracle.silent}
-              </div>
-            )}
-          </AnimatePresence>
+          {/* Prophecy card — the main attraction */}
+          <div className="flex-1 min-h-0">
+            <AnimatePresence mode="wait">
+              {market && pools ? (
+                <ProphecyCard
+                  key={market.id}
+                  market={market}
+                  pools={pools}
+                  onBet={handleBet}
+                />
+              ) : (
+                <div className="rounded-2xl border border-border/40 bg-surface/60 p-6 text-center">
+                  <p className="font-display text-sm text-text-muted">{COPY.oracle.silent}</p>
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
 
-          <div className="mt-2">
+          {/* Slot tabs + profile link */}
+          <div className="shrink-0 space-y-2 pb-2 pt-3">
             <SlotTabs
               active={activeSlot}
               onSelect={setActiveSlot}
               availability={availability}
             />
+            <nav className="flex items-center justify-center">
+              <Link href="/profile" className="font-display text-[10px] tracking-[0.15em] uppercase text-text-muted hover:text-accent-glow transition-colors">
+                {COPY.profile.title}
+              </Link>
+            </nav>
           </div>
-
-          <nav className="mt-2 flex items-center justify-center gap-4 text-xs text-text-muted">
-            <Link href="/profile" className="hover:text-accent-glow">
-              {COPY.profile.title}
-            </Link>
-          </nav>
         </div>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 safe-bottom">
+      {/* Fixed bottom feed */}
+      <div className="z-30 safe-bottom shrink-0">
         <LiveFeedTicker feed={feed} />
       </div>
 

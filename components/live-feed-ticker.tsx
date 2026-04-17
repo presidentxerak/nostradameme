@@ -18,7 +18,7 @@ export function LiveFeedTicker({ feed }: LiveFeedTickerProps) {
 
   if (feed.length === 0) {
     return (
-      <div className="flex h-10 items-center justify-center bg-surface/80 px-4 text-xs text-text-muted">
+      <div className="flex h-10 items-center justify-center bg-surface/90 px-4 text-[10px] text-text-muted backdrop-blur-md">
         {COPY.liveFeed.empty}
       </div>
     );
@@ -26,19 +26,18 @@ export function LiveFeedTicker({ feed }: LiveFeedTickerProps) {
 
   return (
     <div
-      className="relative h-12 overflow-hidden border-t border-border bg-surface/90 backdrop-blur-md"
+      className="relative h-10 overflow-hidden border-t border-border/40 bg-surface/90 backdrop-blur-md"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={() => setPaused(true)}
       onTouchEnd={() => setPaused(false)}
-      aria-label={COPY.liveFeed.title}
     >
       <motion.div
         className="absolute inset-x-0 top-0 flex flex-col"
         animate={
           reduce || paused
             ? { y: 0 }
-            : { y: [0, -feed.length * 48] }
+            : { y: [0, -feed.length * 40] }
         }
         transition={
           reduce || paused
@@ -59,20 +58,18 @@ export function LiveFeedTicker({ feed }: LiveFeedTickerProps) {
 }
 
 function FeedEntry({ entry }: { entry: LiveFeedEntry }) {
-  const color = entry.side === "yes" ? "text-yes-glow" : "text-no-glow";
-  const dot = entry.side === "yes" ? "bg-yes" : "bg-no";
+  const isYes = entry.side === "yes";
   return (
-    <div className="flex h-12 items-center gap-2 px-4 text-xs">
-      <span className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
-      <span className="truncate font-mono text-text-primary">
-        @{entry.username}
+    <div className="flex h-10 items-center gap-2 px-4 text-[10px]">
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isYes ? "bg-yes" : "bg-no"}`} />
+      <span className="truncate font-mono text-text-secondary">
+        {entry.username}
       </span>
-      <span className="text-text-secondary">{COPY.liveFeed.bet}</span>
       <span className="font-mono text-text-primary">
         {formatUsd(entry.amount)}
       </span>
-      <span className={`font-bold ${color}`}>
-        {entry.side === "yes" ? COPY.bet.yes : COPY.bet.no}
+      <span className={`font-display text-[10px] tracking-widest ${isYes ? "text-yes" : "text-no"}`}>
+        {isYes ? COPY.bet.yes : COPY.bet.no}
       </span>
       <span className="ml-auto text-text-muted">
         {formatRelative(entry.createdAt)}

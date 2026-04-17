@@ -77,12 +77,12 @@ export function OracleCharacter({
               animationData={lottieData}
               loop
               autoplay
-              className="mx-auto h-72 w-72 sm:h-96 sm:w-96"
+              className="mx-auto h-full w-full"
             />
           ) : (
             <OracleSvg
               state={state}
-              className="mx-auto h-72 w-72 sm:h-96 sm:w-96"
+              className="mx-auto h-full w-full"
             />
           )}
           <ScreenPulse state={state} />

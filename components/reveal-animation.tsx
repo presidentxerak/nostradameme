@@ -126,15 +126,7 @@ export function RevealAnimation(props: RevealAnimationProps) {
             transition={{ type: "spring", damping: 18, stiffness: 220 }}
             className={`mt-5 rounded-2xl border px-6 py-3 ${sideBg} ${sideColor} font-display text-2xl`}
           >
-            {isYes ? (
-              <>
-                {COPY.bet.yesEmoji} {COPY.reveal.yesWon}
-              </>
-            ) : (
-              <>
-                {COPY.bet.noEmoji} {COPY.reveal.noWon}
-              </>
-            )}
+            {isYes ? COPY.reveal.yesWon : COPY.reveal.noWon}
           </motion.div>
 
           {props.hasPosition && step >= 9 && (

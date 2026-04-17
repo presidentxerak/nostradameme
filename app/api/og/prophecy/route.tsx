@@ -24,12 +24,7 @@ export async function GET(req: Request) {
       : side === "no"
         ? COPY.share.iSayNo
         : COPY.app.name;
-  const sideEmoji =
-    side === "yes"
-      ? COPY.bet.yesEmoji
-      : side === "no"
-        ? COPY.bet.noEmoji
-        : "\u{1f52e}";
+  const sideSymbol = side === "yes" ? "+" : side === "no" ? "-" : "*";
 
   return new ImageResponse(
     (
@@ -81,7 +76,7 @@ export async function GET(req: Request) {
               fontSize: 60,
             }}
           >
-            {"\u{1f52e}"}
+            {"\u2726"}
           </div>
 
           <div
@@ -108,7 +103,7 @@ export async function GET(req: Request) {
               fontSize: 24,
             }}
           >
-            {sideEmoji} {sideLabel}
+            {sideSymbol} {sideLabel}
           </div>
 
           <div
@@ -135,7 +130,7 @@ export async function GET(req: Request) {
                 fontWeight: 700,
               }}
             >
-              {"\u{1f3c6}"} {COPY.share.won} ${amount}
+              {COPY.share.won} ${amount}
             </div>
           )}
         </div>

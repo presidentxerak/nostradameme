@@ -11,18 +11,18 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-accent text-white hover:bg-accent-glow shadow-lg shadow-accent/20",
+          "bg-accent text-white hover:bg-accent-glow shadow-lg shadow-accent/25 hover:shadow-accent/40 transition-shadow",
         yes:
-          "bg-yes text-white hover:bg-yes-glow shadow-lg shadow-yes/30",
-        no: "bg-no text-white hover:bg-no-glow shadow-lg shadow-no/30",
+          "bg-gradient-to-r from-yes to-yes-blue text-white shadow-lg shadow-yes/30 hover:shadow-yes/50 transition-shadow",
+        no: "bg-gradient-to-r from-no to-no-red text-white shadow-lg shadow-no/30 hover:shadow-no/50 transition-shadow",
         gold:
           "bg-gold text-black hover:bg-gold-glow shadow-lg shadow-gold/30",
         ghost:
           "bg-transparent text-text-primary hover:bg-surface/60",
         outline:
-          "border border-border bg-surface text-text-primary hover:bg-border/40",
+          "border border-border bg-surface/60 text-text-primary hover:border-accent/40 hover:bg-surface transition-colors",
         destructive:
-          "bg-no/20 text-no border border-no/40 hover:bg-no/30",
+          "bg-no/15 text-no border border-no/30 hover:bg-no/25 transition-colors",
       },
       size: {
         default: "h-11 px-5 text-sm",

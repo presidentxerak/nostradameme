@@ -19,37 +19,33 @@ export function YesNoButtons({
   return (
     <div className="grid grid-cols-2 gap-3">
       <motion.button
-        whileTap={{ scale: disabled ? 1 : 0.97 }}
-        whileHover={{ scale: disabled ? 1 : 1.02 }}
+        whileTap={{ scale: disabled ? 1 : 0.95 }}
+        whileHover={{ scale: disabled ? 1 : 1.03 }}
         disabled={disabled}
         onClick={() => onBet("yes")}
-        className="group relative flex h-20 flex-col items-center justify-center gap-1 rounded-2xl bg-yes text-white shadow-lg shadow-yes/30 transition-all hover:bg-yes-glow disabled:opacity-50"
+        className="group relative flex h-16 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-yes/40 bg-gradient-to-b from-yes/20 to-yes-dim/10 text-yes-glow transition-all hover:border-yes-glow/60 disabled:opacity-40 animate-glow-yes"
       >
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">{COPY.bet.yesEmoji}</span>
-          <span className="font-display text-2xl tracking-widest">
-            {COPY.bet.yes}
-          </span>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yes/5 to-transparent bg-shimmer-size animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
+        <span className="relative font-display text-xl tracking-[0.2em] font-bold text-glow-yes">
+          {COPY.bet.yes}
+        </span>
         {typeof yesPct === "number" && (
-          <span className="font-mono text-xs opacity-80">{yesPct}%</span>
+          <span className="relative font-mono text-[10px] text-yes/80">{yesPct}%</span>
         )}
       </motion.button>
       <motion.button
-        whileTap={{ scale: disabled ? 1 : 0.97 }}
-        whileHover={{ scale: disabled ? 1 : 1.02 }}
+        whileTap={{ scale: disabled ? 1 : 0.95 }}
+        whileHover={{ scale: disabled ? 1 : 1.03 }}
         disabled={disabled}
         onClick={() => onBet("no")}
-        className="group relative flex h-20 flex-col items-center justify-center gap-1 rounded-2xl bg-no text-white shadow-lg shadow-no/30 transition-all hover:bg-no-glow disabled:opacity-50"
+        className="group relative flex h-16 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-xl border border-no/40 bg-gradient-to-b from-no/20 to-no-dim/10 text-no-glow transition-all hover:border-no-glow/60 disabled:opacity-40 animate-glow-no"
       >
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">{COPY.bet.noEmoji}</span>
-          <span className="font-display text-2xl tracking-widest">
-            {COPY.bet.no}
-          </span>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-no/5 to-transparent bg-shimmer-size animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
+        <span className="relative font-display text-xl tracking-[0.2em] font-bold text-glow-no">
+          {COPY.bet.no}
+        </span>
         {typeof noPct === "number" && (
-          <span className="font-mono text-xs opacity-80">{noPct}%</span>
+          <span className="relative font-mono text-[10px] text-no/80">{noPct}%</span>
         )}
       </motion.button>
     </div>

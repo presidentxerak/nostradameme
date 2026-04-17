@@ -10,58 +10,82 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0a0a0f",
-        surface: "#12121a",
-        border: "#1e1e2e",
+        background: "#06060c",
+        surface: "#0e0e18",
+        border: "#1a1a2e",
         accent: {
-          DEFAULT: "#7c3aed",
-          glow: "#9d5cf0",
+          DEFAULT: "#8b5cf6",
+          glow: "#a78bfa",
+          dim: "#6d28d9",
         },
         yes: {
-          DEFAULT: "#10b981",
-          glow: "#34d399",
+          DEFAULT: "#00e5a0",
+          glow: "#00ffbb",
+          dim: "#059669",
+          blue: "#06b6d4",
         },
         no: {
-          DEFAULT: "#ef4444",
-          glow: "#f87171",
+          DEFAULT: "#ff2d7a",
+          glow: "#ff5ca1",
+          dim: "#be185d",
+          red: "#ef4444",
         },
         gold: {
           DEFAULT: "#f59e0b",
           glow: "#fbbf24",
         },
-        meme: {
-          purple: "#a855f7",
-        },
         text: {
-          primary: "#f8fafc",
-          secondary: "#94a3b8",
-          muted: "#475569",
+          primary: "#f0f0f5",
+          secondary: "#8b8ba0",
+          muted: "#4a4a60",
         },
       },
       fontFamily: {
-        display: ["Cinzel", "serif"],
+        display: ["Cinzel Decorative", "Cinzel", "serif"],
         sans: ["Inter", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
       animation: {
         "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "float": "float 6s ease-in-out infinite",
-        "glow": "glow 2s ease-in-out infinite",
+        "glow-yes": "glowYes 2s ease-in-out infinite",
+        "glow-no": "glowNo 2s ease-in-out infinite",
+        "glow-accent": "glowAccent 3s ease-in-out infinite",
         "ticker": "ticker 40s linear infinite",
+        "shimmer": "shimmer 2s linear infinite",
       },
       keyframes: {
         float: {
           "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-10px)" },
+          "50%": { transform: "translateY(-8px)" },
         },
-        glow: {
-          "0%, 100%": { boxShadow: "0 0 20px rgba(124, 58, 237, 0.3)" },
-          "50%": { boxShadow: "0 0 40px rgba(124, 58, 237, 0.6)" },
+        glowYes: {
+          "0%, 100%": { boxShadow: "0 0 15px rgba(0, 229, 160, 0.3), 0 0 30px rgba(6, 182, 212, 0.15)" },
+          "50%": { boxShadow: "0 0 25px rgba(0, 255, 187, 0.5), 0 0 50px rgba(6, 182, 212, 0.3)" },
+        },
+        glowNo: {
+          "0%, 100%": { boxShadow: "0 0 15px rgba(255, 45, 122, 0.3), 0 0 30px rgba(239, 68, 68, 0.15)" },
+          "50%": { boxShadow: "0 0 25px rgba(255, 92, 161, 0.5), 0 0 50px rgba(239, 68, 68, 0.3)" },
+        },
+        glowAccent: {
+          "0%, 100%": { boxShadow: "0 0 20px rgba(139, 92, 246, 0.2)" },
+          "50%": { boxShadow: "0 0 40px rgba(167, 139, 250, 0.5)" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
         },
         ticker: {
           "0%": { transform: "translateY(0)" },
           "100%": { transform: "translateY(-100%)" },
         },
+      },
+      backgroundImage: {
+        "shimmer-gradient":
+          "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)",
+      },
+      backgroundSize: {
+        "shimmer-size": "200% 100%",
       },
     },
   },

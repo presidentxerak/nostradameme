@@ -3,6 +3,7 @@
  * Components MUST import from this file rather than hard-coding literals.
  * Zero forbidden words: blockchain, wallet (except "your balance"),
  * XRPL, RLUSD, ledger, seed phrase, private key, transaction, crypto.
+ * Zero emojis — all icons are CSS/SVG.
  */
 
 export const COPY = {
@@ -19,10 +20,10 @@ export const COPY = {
   },
 
   slots: {
-    morning: { key: "morning", emoji: "\u2600\ufe0f", label: "Morning Prophecy \u00b7 9h\u201312h", short: "9H" },
-    noon: { key: "noon", emoji: "\ud83c\udf24\ufe0f", label: "Noon Prophecy \u00b7 12h\u201300h", short: "12H" },
-    night: { key: "night", emoji: "\ud83c\udf19", label: "Night Prophecy \u00b7 00h\u20139h", short: "00H" },
-    weekly: { key: "weekly", emoji: "\u2728", label: "Weekly Prophecy", short: "WEEK" },
+    morning: { key: "morning", label: "Dawn Prophecy \u00b7 9h\u201312h", short: "DAWN" },
+    noon: { key: "noon", label: "Noon Prophecy \u00b7 12h\u201300h", short: "NOON" },
+    night: { key: "night", label: "Dusk Prophecy \u00b7 00h\u20139h", short: "DUSK" },
+    weekly: { key: "weekly", label: "Weekly Prophecy", short: "WEEK" },
   },
 
   oracle: {
@@ -37,7 +38,7 @@ export const COPY = {
     sealed: "YOUR PROPHECY IS SEALED",
     won: "The oracle smiled upon you",
     lost: "Even Nostradamus was wrong sometimes",
-    locked: "\ud83d\udd12 Locked \u2014 awaiting the oracle",
+    locked: "Locked \u2014 awaiting the oracle",
     remaining: "remaining",
     opensIn: "Opens in",
     totalLabel: "Total",
@@ -47,8 +48,6 @@ export const COPY = {
   bet: {
     yes: "YES",
     no: "NO",
-    yesEmoji: "\ud83d\udc41\ufe0f",
-    noEmoji: "\ud83d\udc80",
     youSay: "You say",
     howMuch: "How much?",
     ifYesWins: "If YES wins",
@@ -69,9 +68,9 @@ export const COPY = {
     title: "Live Prophecies",
     empty: "The oracle chamber is silent\u2026",
     bet: "bet",
-    secondsAgo: "s ago",
-    minutesAgo: "m ago",
-    hoursAgo: "h ago",
+    secondsAgo: "s",
+    minutesAgo: "m",
+    hoursAgo: "h",
   },
 
   reveal: {
@@ -176,9 +175,9 @@ export const COPY = {
     copy: "Copy link",
     tweet: "Share on X",
     textAfterBet: (question: string, side: string, url: string) =>
-      `\ud83d\udd2e I just predicted ${side} on:\n"${question}"\nDare to disagree? ${url}`,
+      `I just predicted ${side} on:\n"${question}"\nDare to disagree? ${url}`,
     textAfterWin: (amount: string, url: string) =>
-      `\ud83c\udfc6 The oracle spoke and I was right!\nJust won ${amount} on Nostradameme\n${url}`,
+      `The oracle spoke and I was right!\nJust won ${amount} on Nostradameme\n${url}`,
     refBanner: (name: string, side: string) =>
       `${name} predicted ${side}. Do you dare to disagree?`,
     title: "Nostradameme",

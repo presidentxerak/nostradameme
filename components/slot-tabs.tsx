@@ -18,7 +18,7 @@ export function SlotTabs({
   availability,
   opensInLabel,
 }: SlotTabsProps) {
-  const slots: { key: SlotKey; meta: { emoji: string; label: string; short: string } }[] = [
+  const slots: { key: SlotKey; meta: { label: string; short: string } }[] = [
     { key: "morning", meta: COPY.slots.morning },
     { key: "noon", meta: COPY.slots.noon },
     { key: "night", meta: COPY.slots.night },
@@ -34,23 +34,22 @@ export function SlotTabs({
             type="button"
             onClick={() => onSelect(key)}
             className={cn(
-              "flex flex-col items-center gap-1 rounded-xl border py-3 text-sm transition",
+              "flex flex-col items-center gap-0.5 rounded-lg border py-2 text-xs transition-all",
               isActive
-                ? "border-accent bg-accent/20 text-text-primary shadow-lg shadow-accent/20"
-                : "border-border bg-surface/60 text-text-secondary hover:border-accent/40",
+                ? "border-accent/50 bg-accent/15 text-accent-glow shadow-md shadow-accent/10"
+                : "border-border/60 bg-surface/40 text-text-muted hover:border-accent/30 hover:text-text-secondary",
             )}
           >
-            <span className="text-xl">{meta.emoji}</span>
-            <span className="font-display tracking-widest uppercase text-xs">
+            <span className="font-display tracking-[0.15em] uppercase text-[11px]">
               {meta.short}
             </span>
             {state === "locked" && (
-              <span className="text-[10px] text-no-glow">
+              <span className="text-[9px] text-no/70">
                 {COPY.oracle.locked}
               </span>
             )}
             {state === "upcoming" && opensInLabel?.[key] && (
-              <span className="text-[10px] text-text-muted">
+              <span className="text-[9px] text-text-muted">
                 {COPY.oracle.opensIn} {opensInLabel[key]}
               </span>
             )}

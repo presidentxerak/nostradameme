@@ -17,9 +17,9 @@ interface LeaderboardTableProps {
 }
 
 function medalFor(rank: number): string {
-  if (rank === 1) return "\u{1f947}";
-  if (rank === 2) return "\u{1f948}";
-  if (rank === 3) return "\u{1f949}";
+  if (rank === 1) return "I";
+  if (rank === 2) return "II";
+  if (rank === 3) return "III";
   return "";
 }
 

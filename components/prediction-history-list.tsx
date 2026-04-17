@@ -18,14 +18,14 @@ interface PredictionHistoryListProps {
   loading?: boolean;
 }
 
-function slotEmoji(slot: HistoryEntry["slot"]): string {
+function slotLabel(slot: HistoryEntry["slot"]): string {
   return slot === "morning"
-    ? COPY.slots.morning.emoji
+    ? COPY.slots.morning.short
     : slot === "noon"
-      ? COPY.slots.noon.emoji
+      ? COPY.slots.noon.short
       : slot === "night"
-        ? COPY.slots.night.emoji
-        : COPY.slots.weekly.emoji;
+        ? COPY.slots.night.short
+        : COPY.slots.weekly.short;
 }
 
 function groupEntries(entries: HistoryEntry[]) {
@@ -127,14 +127,13 @@ function HistoryItem({
   entry: HistoryEntry;
   username: string;
 }) {
-  const sideEmoji =
-    entry.side === "yes" ? COPY.bet.yesEmoji : COPY.bet.noEmoji;
+  const sideLabel = entry.side === "yes" ? COPY.bet.yes : COPY.bet.no;
   const sideLabel = entry.side === "yes" ? COPY.bet.yes : COPY.bet.no;
 
   return (
     <Card className="border-border">
       <div className="flex items-center gap-2 text-xs text-text-muted">
-        <span>{slotEmoji(entry.slot)}</span>
+        <span className="font-display text-[10px] tracking-widest text-accent">{slotLabel(entry.slot)}</span>
         <span className="font-mono">{entry.assetKey}</span>
         <span>&middot;</span>
         <span>{formatRelative(entry.createdAt)}</span>
@@ -143,7 +142,7 @@ function HistoryItem({
       <div className="mt-2 flex items-center gap-3 text-xs">
         <span className="text-text-secondary">{COPY.profile.history.youSaid}:</span>
         <Badge variant={entry.side === "yes" ? "yes" : "no"}>
-          {sideEmoji} {sideLabel}
+          {sideLabel}
         </Badge>
         <span className="font-mono text-text-primary">
           {formatUsd(entry.amount)}

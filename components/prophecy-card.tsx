@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
 import { TugOfWar } from "@/components/tug-of-war";
 import { YesNoButtons } from "@/components/yes-no-buttons";
 import { COPY } from "@/lib/config/copy";
@@ -43,7 +42,6 @@ export function ProphecyCard({
   }, [market.end_at]);
 
   const locked = market.status === "locked" || msLeft <= 5 * 60 * 1000;
-
   const slotMeta = SLOT_META[market.slot];
   const countdownColor =
     msLeft < 5 * 60 * 1000
@@ -55,33 +53,37 @@ export function ProphecyCard({
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.35 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.3 }}
     >
-      <Card className="border-accent/30 bg-gradient-to-b from-surface/90 to-surface/60 shadow-2xl shadow-accent/20">
-        <div className="mb-2 flex items-center gap-2">
-          <span className="text-xl">{slotMeta.emoji}</span>
-          <span className="font-display text-sm uppercase tracking-widest text-accent-glow">
+      <div className="rounded-2xl border border-accent-dim/30 bg-surface/80 backdrop-blur-sm p-4 border-glow-accent">
+        {/* Header row */}
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="font-display text-[11px] uppercase tracking-[0.15em] text-accent-glow">
             {slotMeta.label}
           </span>
-          <span className="ml-auto font-mono text-xs text-text-muted">
+          <span className="font-mono text-[10px] text-text-muted">
             {market.asset.asset_key}
           </span>
         </div>
 
-        <h2 className="mb-2 text-2xl font-semibold leading-snug text-text-primary">
+        {/* Question */}
+        <h2 className="mb-1.5 font-display text-lg leading-snug text-text-primary sm:text-xl">
           {market.question}
         </h2>
 
-        <p className="mb-3 italic text-text-muted">
+        {/* Oracle quote */}
+        <p className="mb-3 text-xs italic text-text-muted leading-relaxed">
           &ldquo;{market.oracle_quote}&rdquo;
         </p>
 
+        {/* Tug of war */}
         <TugOfWar pools={pools} />
 
-        <div className="my-4">
+        {/* YES / NO buttons */}
+        <div className="mt-3">
           <YesNoButtons
             onBet={onBet}
             disabled={disabled || locked}
@@ -90,21 +92,17 @@ export function ProphecyCard({
           />
         </div>
 
+        {/* Countdown */}
         <div
-          className={`flex items-center justify-center gap-2 font-mono text-sm ${countdownColor}`}
+          className={`mt-2 text-center font-mono text-xs ${countdownColor}`}
         >
           {locked ? (
             <span className="font-bold">{COPY.oracle.locked}</span>
           ) : (
-            <>
-              <span>{"\u23f1"}</span>
-              <span>
-                {remaining} {COPY.oracle.remaining}
-              </span>
-            </>
+            <span>{remaining} {COPY.oracle.remaining}</span>
           )}
         </div>
-      </Card>
+      </div>
     </motion.div>
   );
 }
