@@ -10,6 +10,7 @@ export const PRIVY_CONFIG = {
     theme: "dark" as "dark",
     accentColor: THEME.colors.accent as `#${string}`,
     logo: "/logo.svg",
+    showWalletLoginFirst: false,
   },
   embeddedWallets: {
     createOnLogin: "off" as const,

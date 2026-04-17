@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
-import { OracleCharacter } from "@/components/oracle-character";
+import { OracleVideo } from "@/components/oracle-video";
 import { ProphecyCard } from "@/components/prophecy-card";
 import { LiveFeedTicker } from "@/components/live-feed-ticker";
 import { BetSheet } from "@/components/bet-sheet";
@@ -151,9 +151,9 @@ export function OraclePageClient(props: OraclePageClientProps) {
 
   return (
     <div className="relative flex h-[100dvh] flex-col bg-background overflow-hidden">
-      {/* Top bar: balance + auth */}
+      {/* Top bar: logo + balance + auth */}
       <header className="z-40 flex items-center justify-between px-4 py-2 border-b border-border/20">
-        <span className="font-display text-lg text-accent-glow text-glow-accent">
+        <span className="font-display text-2xl sm:text-3xl text-accent-glow text-glow-accent">
           {COPY.header.logo}
         </span>
         <div className="flex items-center gap-3">
@@ -178,15 +178,12 @@ export function OraclePageClient(props: OraclePageClientProps) {
       {/* Main scrollable content */}
       <main className="flex-1 overflow-y-auto px-4 pb-20">
         <div className="mx-auto flex max-w-lg flex-col items-center">
-          {/* Square image placeholder for oracle artwork */}
-          <div className="mt-3 w-full max-w-[260px] sm:max-w-[300px]">
-            <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-border/30 bg-surface/40">
-              <OracleCharacter
-                pools={pools}
-                status={market?.status ?? "draft"}
-                className="h-full w-full"
-              />
-            </div>
+          {/* Oracle video — switches based on market state */}
+          <div className="mt-3 w-full">
+            <OracleVideo
+              status={market?.status ?? "draft"}
+              className="aspect-square w-full max-w-[400px] mx-auto"
+            />
           </div>
 
           {/* Prophecy card */}

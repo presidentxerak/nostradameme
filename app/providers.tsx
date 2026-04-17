@@ -19,15 +19,20 @@ function isValidPrivyAppId(id: string): boolean {
 }
 
 function AuthSync({ children }: { children: React.ReactNode }) {
-  const { authenticated, ready } = usePrivy();
+  const { authenticated, ready, getAccessToken } = usePrivy();
 
   const syncProfile = useCallback(async () => {
     try {
-      await fetch("/api/auth/sync", { method: "POST" });
+      const token = await getAccessToken();
+      if (!token) return;
+      await fetch("/api/auth/sync", {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}` },
+      });
     } catch {
       // will retry next load
     }
-  }, []);
+  }, [getAccessToken]);
 
   useEffect(() => {
     if (ready && authenticated) {
