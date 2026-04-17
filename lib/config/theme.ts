@@ -16,7 +16,7 @@ export const THEME = {
     textMuted: "#4a4a60",
   },
   fonts: {
-    display: "Jacquarda Bastarda, Cinzel, serif",
+    display: "Jacquard 12, Cinzel, serif",
     body: "Inter, sans-serif",
     mono: "JetBrains Mono, monospace",
   },
