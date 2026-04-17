@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { OracleIdentityCard } from "@/components/oracle-identity-card";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import { SettingsForm, type SettingsFormValues } from "@/components/settings-form";
 import { OnrampWidget } from "@/components/onramp-widget";
 import { BalanceDisplay } from "@/components/balance-display";
 import { BottomNav } from "@/components/bottom-nav";
+import { AuthButton } from "@/components/auth-button";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { COPY } from "@/lib/config/copy";
@@ -24,14 +24,14 @@ interface ProfilePageClientProps {
   totalEarned: number;
   balance: number;
   initialSettings: SettingsFormValues;
+  isAuthed: boolean;
 }
 
+type Tab = "wallet" | "leaderboard" | "settings";
 type Period = "all_time" | "weekly" | "daily";
 
 export function ProfilePageClient(props: ProfilePageClientProps) {
-  const [tab, setTab] = useState<"wallet" | "leaderboard" | "settings">(
-    "wallet",
-  );
+  const [tab, setTab] = useState<Tab>("wallet");
   const [period, setPeriod] = useState<Period>("all_time");
   const [lbEntries, setLbEntries] = useState<LeaderboardEntry[]>([]);
   const [lbCurrent, setLbCurrent] = useState<LeaderboardEntry | null>(null);
@@ -86,83 +86,105 @@ export function ProfilePageClient(props: ProfilePageClientProps) {
     window.location.href = "/";
   };
 
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "wallet", label: "Wallet" },
+    { key: "leaderboard", label: "Leaderboard" },
+    { key: "settings", label: "Settings" },
+  ];
+
   return (
     <div className="relative flex h-[100dvh] flex-col bg-background overflow-hidden">
-      <header className="z-40 border-b border-border/40 bg-background/90 px-4 py-3 backdrop-blur-md">
-        <h1 className="font-display text-xl text-accent-glow text-glow-accent text-center">
+      <header className="z-40 flex items-center justify-between border-b border-border/20 bg-background/90 px-4 py-3 backdrop-blur-md">
+        <h1 className="font-display text-lg text-accent-glow text-glow-accent">
           {COPY.profile.title}
         </h1>
+        <AuthButton />
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 pb-20 pt-4">
-        <div className="mx-auto flex max-w-lg flex-col gap-5">
-          <OracleIdentityCard
-            userId={props.userId}
-            username={props.username}
-            oracleTitle={props.oracleTitle}
-            winRate={props.winRate}
-            totalPredictions={props.totalPredictions}
-            totalEarned={props.totalEarned}
-          />
-
-          <Tabs
-            value={tab}
-            onValueChange={(v) =>
-              setTab(v as "wallet" | "leaderboard" | "settings")
-            }
-          >
-            <TabsList className="w-full">
-              <TabsTrigger value="wallet" className="flex-1">
-                Wallet
-              </TabsTrigger>
-              <TabsTrigger value="leaderboard" className="flex-1">
-                {COPY.profile.tabs.leaderboard}
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex-1">
-                {COPY.profile.tabs.settings}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="wallet">
-              <Card className="flex flex-col items-center gap-4 py-6">
-                <p className="text-xs uppercase tracking-widest text-text-muted">
-                  {COPY.profile.identity.balance}
-                </p>
-                <div className="text-4xl font-bold text-text-primary">
-                  <BalanceDisplay balance={props.balance} />
-                </div>
-                <div className="flex gap-3">
-                  <Button onClick={() => setOnrampOpen(true)}>
-                    {COPY.profile.identity.addFunds}
-                  </Button>
-                </div>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="leaderboard">
-              <LeaderboardTable
-                entries={lbEntries}
-                currentUserEntry={lbCurrent}
-                period={period}
-                onPeriodChange={setPeriod}
-                loading={lbLoading}
-                updatedAt={lbUpdatedAt}
-              />
-            </TabsContent>
-
-            <TabsContent value="settings">
-              <SettingsForm
-                initial={props.initialSettings}
-                email={props.email}
+        <div className="mx-auto flex max-w-lg flex-col gap-4">
+          {!props.isAuthed ? (
+            <div className="flex flex-col items-center gap-5 pt-12 text-center">
+              <div className="h-20 w-20 rounded-full bg-surface border border-border/40 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-10 w-10 text-text-muted">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M20 21a8 8 0 10-16 0" />
+                </svg>
+              </div>
+              <p className="text-lg text-text-secondary">{COPY.auth.signInPrompt}</p>
+              <AuthButton />
+            </div>
+          ) : (
+            <>
+              {/* Identity card */}
+              <OracleIdentityCard
+                userId={props.userId}
+                username={props.username}
                 oracleTitle={props.oracleTitle}
-                balance={props.balance}
-                onSave={handleSaveSettings}
-                onAddFunds={() => setOnrampOpen(true)}
-                onSignOut={handleSignOut}
-                onCloseAccount={handleCloseAccount}
+                winRate={props.winRate}
+                totalPredictions={props.totalPredictions}
+                totalEarned={props.totalEarned}
               />
-            </TabsContent>
-          </Tabs>
+
+              {/* Tab bar */}
+              <div className="flex gap-1 rounded-xl border border-border/40 bg-surface/40 p-1">
+                {tabs.map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => setTab(t.key)}
+                    className={`flex-1 rounded-lg py-2 text-xs font-bold tracking-wider transition-all ${
+                      tab === t.key
+                        ? "bg-accent text-white shadow-md shadow-accent/20"
+                        : "text-text-muted hover:text-text-secondary"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab content */}
+              {tab === "wallet" && (
+                <Card className="flex flex-col items-center gap-5 py-8">
+                  <p className="text-xs uppercase tracking-widest text-text-muted">
+                    {COPY.profile.identity.balance}
+                  </p>
+                  <p className="text-5xl font-bold text-text-primary">
+                    {formatUsd(props.balance)}
+                  </p>
+                  <div className="flex gap-3">
+                    <Button onClick={() => setOnrampOpen(true)} size="lg">
+                      {COPY.profile.identity.addFunds}
+                    </Button>
+                  </div>
+                </Card>
+              )}
+
+              {tab === "leaderboard" && (
+                <LeaderboardTable
+                  entries={lbEntries}
+                  currentUserEntry={lbCurrent}
+                  period={period}
+                  onPeriodChange={setPeriod}
+                  loading={lbLoading}
+                  updatedAt={lbUpdatedAt}
+                />
+              )}
+
+              {tab === "settings" && (
+                <SettingsForm
+                  initial={props.initialSettings}
+                  email={props.email}
+                  oracleTitle={props.oracleTitle}
+                  balance={props.balance}
+                  onSave={handleSaveSettings}
+                  onAddFunds={() => setOnrampOpen(true)}
+                  onSignOut={handleSignOut}
+                  onCloseAccount={handleCloseAccount}
+                />
+              )}
+            </>
+          )}
         </div>
       </main>
 

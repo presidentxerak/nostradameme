@@ -10,11 +10,14 @@ import { ProphecySealed } from "@/components/prophecy-sealed";
 import { RevealAnimation } from "@/components/reveal-animation";
 import { OnrampWidget } from "@/components/onramp-widget";
 import { BottomNav } from "@/components/bottom-nav";
+import { AuthButton } from "@/components/auth-button";
+import { BalanceDisplay } from "@/components/balance-display";
 import { COPY } from "@/lib/config/copy";
 import { useMarketPools } from "@/lib/hooks/use-market-pools";
 import { useBalance } from "@/lib/hooks/use-balance";
 import { useMarketResolution } from "@/lib/hooks/use-market-resolution";
 import { useLiveFeed } from "@/lib/hooks/use-live-feed";
+import { formatUsd } from "@/lib/utils/currency";
 import type { LiveFeedEntry, MarketPools, MarketWithAsset } from "@/types/app";
 import type { MarketSide } from "@/types/db";
 
@@ -40,7 +43,6 @@ export interface OraclePageClientProps {
 }
 
 export function OraclePageClient(props: OraclePageClientProps) {
-  // Auto-select the first open slot — no manual tabs.
   const current = useMemo(() => {
     const open = props.slots.find(
       (s) => s.market && s.market.status === "open",
@@ -69,7 +71,6 @@ export function OraclePageClient(props: OraclePageClientProps) {
   const [sealed, setSealed] = useState<MarketSide | null>(null);
   const [onrampOpen, setOnrampOpen] = useState(false);
   const [revealVisible, setRevealVisible] = useState(false);
-  const [authPrompt, setAuthPrompt] = useState(false);
   const [userPositionSide, setUserPositionSide] = useState<MarketSide | null>(
     current?.userPositionSide ?? null,
   );
@@ -90,15 +91,10 @@ export function OraclePageClient(props: OraclePageClientProps) {
 
   const handleBet = useCallback(
     (side: MarketSide) => {
-      if (!props.isAuthed) {
-        setAuthPrompt(true);
-        setTimeout(() => setAuthPrompt(false), 3000);
-        return;
-      }
       setBetSide(side);
       setBetOpen(true);
     },
-    [props.isAuthed],
+    [],
   );
 
   const handleConfirmBet = useCallback(
@@ -130,14 +126,9 @@ export function OraclePageClient(props: OraclePageClientProps) {
   );
 
   const handleAddFunds = useCallback(() => {
-    if (!props.isAuthed) {
-      setAuthPrompt(true);
-      setTimeout(() => setAuthPrompt(false), 3000);
-      return;
-    }
     setBetOpen(false);
     setOnrampOpen(true);
-  }, [props.isAuthed]);
+  }, []);
 
   const market = current?.market ?? null;
 
@@ -160,11 +151,20 @@ export function OraclePageClient(props: OraclePageClientProps) {
 
   return (
     <div className="relative flex h-[100dvh] flex-col bg-background overflow-hidden">
-      {authPrompt && (
-        <div className="border-b border-accent/30 bg-accent/10 px-4 py-2 text-center text-xs text-accent-glow">
-          {COPY.auth.signInPrompt}
+      {/* Top bar: balance + auth */}
+      <header className="z-40 flex items-center justify-between px-4 py-2 border-b border-border/20">
+        <span className="font-display text-lg text-accent-glow text-glow-accent">
+          {COPY.header.logo}
+        </span>
+        <div className="flex items-center gap-3">
+          {props.isAuthed && (
+            <span className="text-sm text-text-primary font-bold">
+              {formatUsd(balance)}
+            </span>
+          )}
+          <AuthButton />
         </div>
-      )}
+      </header>
 
       {props.refUsername && (
         <div className="border-b border-border/30 bg-accent/5 px-4 py-1.5 text-center text-xs text-accent-glow">
@@ -178,8 +178,8 @@ export function OraclePageClient(props: OraclePageClientProps) {
       {/* Main scrollable content */}
       <main className="flex-1 overflow-y-auto px-4 pb-20">
         <div className="mx-auto flex max-w-lg flex-col items-center">
-          {/* Square image placeholder */}
-          <div className="mt-3 w-full max-w-[280px] sm:max-w-[320px]">
+          {/* Square image placeholder for oracle artwork */}
+          <div className="mt-3 w-full max-w-[260px] sm:max-w-[300px]">
             <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-border/30 bg-surface/40">
               <OracleCharacter
                 pools={pools}
@@ -189,13 +189,8 @@ export function OraclePageClient(props: OraclePageClientProps) {
             </div>
           </div>
 
-          {/* Live feed — centered between image and card */}
-          <div className="my-3 w-full">
-            <LiveFeedTicker feed={feed} />
-          </div>
-
           {/* Prophecy card */}
-          <div className="w-full">
+          <div className="mt-4 w-full">
             <AnimatePresence mode="wait">
               {market && pools ? (
                 <ProphecyCard
@@ -210,6 +205,11 @@ export function OraclePageClient(props: OraclePageClientProps) {
                 </div>
               )}
             </AnimatePresence>
+          </div>
+
+          {/* Live feed — BELOW the card */}
+          <div className="mt-4 w-full">
+            <LiveFeedTicker feed={feed} />
           </div>
         </div>
       </main>
@@ -229,7 +229,6 @@ export function OraclePageClient(props: OraclePageClientProps) {
       />
 
       <OnrampWidget open={onrampOpen} onOpenChange={setOnrampOpen} />
-
       <ProphecySealed visible={sealed !== null} side={sealed} />
 
       <RevealAnimation

@@ -1,6 +1,7 @@
 "use client";
 
-import { PrivyProvider } from "@privy-io/react-auth";
+import { useEffect, useCallback } from "react";
+import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
 import { PRIVY_CONFIG } from "@/lib/privy/config";
 
 interface ProvidersProps {
@@ -11,10 +12,28 @@ function isValidPrivyAppId(id: string): boolean {
   return Boolean(id) && !id.includes("placeholder") && id.length > 8;
 }
 
+function AuthSync({ children }: { children: React.ReactNode }) {
+  const { authenticated, ready } = usePrivy();
+
+  const syncProfile = useCallback(async () => {
+    try {
+      await fetch("/api/auth/sync", { method: "POST" });
+    } catch {
+      // sync failed — will retry next load
+    }
+  }, []);
+
+  useEffect(() => {
+    if (ready && authenticated) {
+      void syncProfile();
+    }
+  }, [ready, authenticated, syncProfile]);
+
+  return <>{children}</>;
+}
+
 export function Providers({ children }: ProvidersProps) {
   if (!isValidPrivyAppId(PRIVY_CONFIG.appId)) {
-    // During static generation or when env vars are missing,
-    // render children without Privy to avoid initialization crash.
     return <>{children}</>;
   }
   return (
@@ -26,7 +45,7 @@ export function Providers({ children }: ProvidersProps) {
         embeddedWallets: PRIVY_CONFIG.embeddedWallets,
       }}
     >
-      {children}
+      <AuthSync>{children}</AuthSync>
     </PrivyProvider>
   );
 }
