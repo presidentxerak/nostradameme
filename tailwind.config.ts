@@ -41,7 +41,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["Cinzel Decorative", "Cinzel", "serif"],
+        display: ["Jacquarda Bastarda", "Cinzel", "serif"],
         sans: ["Inter", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
