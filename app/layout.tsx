@@ -1,8 +1,36 @@
 import type { Metadata, Viewport } from "next";
+import localFont from "next/font/local";
+import { Cinzel, Inter, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/app/providers";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { COPY } from "@/lib/config/copy";
 import "./globals.css";
+
+const jacquard = localFont({
+  src: "../public/Jacquard12-Regular.ttf",
+  variable: "--font-display",
+  display: "swap",
+});
+
+const cinzel = Cinzel({
+  subsets: ["latin"],
+  variable: "--font-cinzel",
+  weight: ["500", "700"],
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["500", "600"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: `${COPY.app.name} — ${COPY.app.tagline}`,
@@ -21,7 +49,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0a0f",
+  themeColor: "#06060c",
   initialScale: 1,
   width: "device-width",
   maximumScale: 1,
@@ -33,19 +61,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin=""
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html
+      lang="en"
+      className={`dark ${jacquard.variable} ${cinzel.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+    >
       <body className="min-h-screen bg-background font-sans text-text-primary antialiased">
         <Providers>{children}</Providers>
         <ServiceWorkerRegister />

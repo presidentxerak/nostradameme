@@ -41,9 +41,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["Jacquard 12", "Cinzel", "serif"],
-        sans: ["Inter", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        display: ["var(--font-display)", "var(--font-cinzel)", "serif"],
+        sans: ["var(--font-sans)", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
       },
       animation: {
         "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
