@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { createContext, useContext, useEffect, useCallback } from "react";
 import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
 import { PRIVY_CONFIG } from "@/lib/privy/config";
 
 interface ProvidersProps {
   children: React.ReactNode;
+}
+
+const PrivyAvailableContext = createContext(false);
+
+export function usePrivyAvailable(): boolean {
+  return useContext(PrivyAvailableContext);
 }
 
 function isValidPrivyAppId(id: string): boolean {
@@ -19,7 +25,7 @@ function AuthSync({ children }: { children: React.ReactNode }) {
     try {
       await fetch("/api/auth/sync", { method: "POST" });
     } catch {
-      // sync failed — will retry next load
+      // will retry next load
     }
   }, []);
 
@@ -34,18 +40,24 @@ function AuthSync({ children }: { children: React.ReactNode }) {
 
 export function Providers({ children }: ProvidersProps) {
   if (!isValidPrivyAppId(PRIVY_CONFIG.appId)) {
-    return <>{children}</>;
+    return (
+      <PrivyAvailableContext.Provider value={false}>
+        {children}
+      </PrivyAvailableContext.Provider>
+    );
   }
   return (
-    <PrivyProvider
-      appId={PRIVY_CONFIG.appId}
-      config={{
-        loginMethods: [...PRIVY_CONFIG.loginMethods],
-        appearance: PRIVY_CONFIG.appearance,
-        embeddedWallets: PRIVY_CONFIG.embeddedWallets,
-      }}
-    >
-      <AuthSync>{children}</AuthSync>
-    </PrivyProvider>
+    <PrivyAvailableContext.Provider value={true}>
+      <PrivyProvider
+        appId={PRIVY_CONFIG.appId}
+        config={{
+          loginMethods: [...PRIVY_CONFIG.loginMethods],
+          appearance: PRIVY_CONFIG.appearance,
+          embeddedWallets: PRIVY_CONFIG.embeddedWallets,
+        }}
+      >
+        <AuthSync>{children}</AuthSync>
+      </PrivyProvider>
+    </PrivyAvailableContext.Provider>
   );
 }
