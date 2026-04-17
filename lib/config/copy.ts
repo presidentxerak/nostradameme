@@ -85,6 +85,12 @@ export const COPY = {
     dismiss: "Tap to dismiss",
   },
 
+  nav: {
+    oracle: "Oracle",
+    predictions: "My predictions",
+    profile: "Profile",
+  },
+
   profile: {
     title: "Profile",
     tabs: {

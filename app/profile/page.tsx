@@ -1,59 +1,81 @@
 import { redirect } from "next/navigation";
-import { getSessionUser } from "@/lib/auth/session";
-import { getAdminSupabase } from "@/lib/supabase/admin";
-import { getUserBalance } from "@/lib/services/positions";
-import { getUserHistory } from "@/lib/services/portfolio";
-import { resolveUsername } from "@/lib/utils/meme-names";
-import { getOracleTitleString } from "@/lib/oracle/titles";
 import { ProfilePageClient } from "./profile-page-client";
 import type { ProfileRow, UserSettingsRow } from "@/types/db";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
-  const user = await getSessionUser();
-  if (!user) {
+  let userId = "";
+  let email: string | null = null;
+  let username = "anon_oracle";
+  let oracleTitle = "Seeker";
+  let winRate = 0;
+  let totalPredictions = 0;
+  let totalEarned = 0;
+  let balance = 0;
+  let settingsValues = {
+    username: "",
+    notifyOnResolution: true,
+    notifyOnNewMarket: false,
+  };
+
+  try {
+    const { getSessionUser } = await import("@/lib/auth/session");
+    const user = await getSessionUser();
+    if (!user) redirect("/");
+    userId = user.id;
+    email = user.email;
+
+    const { getAdminSupabase } = await import("@/lib/supabase/admin");
+    const { getUserBalance } = await import("@/lib/services/positions");
+    const { resolveUsername } = await import("@/lib/utils/meme-names");
+    const { getOracleTitleString } = await import("@/lib/oracle/titles");
+
+    const admin = getAdminSupabase();
+    const [{ data: profileRaw }, { data: settingsRaw }, bal] =
+      await Promise.all([
+        admin.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+        admin
+          .from("user_settings")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle(),
+        getUserBalance(user.id),
+      ]);
+    const profile = profileRaw as ProfileRow | null;
+    const settings = settingsRaw as UserSettingsRow | null;
+
+    balance = bal;
+    username = resolveUsername(user.id, profile?.username ?? null);
+    oracleTitle =
+      profile?.oracle_title ??
+      getOracleTitleString(
+        Number(profile?.win_rate ?? 0),
+        profile?.total_predictions ?? 0,
+      );
+    winRate = Number(profile?.win_rate ?? 0);
+    totalPredictions = profile?.total_predictions ?? 0;
+    totalEarned = Number(profile?.total_earned ?? 0);
+    settingsValues = {
+      username: profile?.username ?? "",
+      notifyOnResolution: settings?.notify_on_resolution ?? true,
+      notifyOnNewMarket: settings?.notify_on_new_market ?? false,
+    };
+  } catch {
     redirect("/");
   }
-  const admin = getAdminSupabase();
-  const [{ data: profileRaw }, { data: settingsRaw }, history, balance] =
-    await Promise.all([
-      admin.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-      admin
-        .from("user_settings")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      getUserHistory(user.id, 50, 0),
-      getUserBalance(user.id),
-    ]);
-  const profile = (profileRaw as ProfileRow | null) ?? null;
-  const settings = (settingsRaw as UserSettingsRow | null) ?? null;
-
-  const username = resolveUsername(user.id, profile?.username ?? null);
-  const oracleTitle =
-    profile?.oracle_title ??
-    getOracleTitleString(
-      Number(profile?.win_rate ?? 0),
-      profile?.total_predictions ?? 0,
-    );
 
   return (
     <ProfilePageClient
-      userId={user.id}
+      userId={userId}
       username={username}
-      email={user.email}
+      email={email}
       oracleTitle={oracleTitle}
-      winRate={Number(profile?.win_rate ?? 0)}
-      totalPredictions={profile?.total_predictions ?? 0}
-      totalEarned={Number(profile?.total_earned ?? 0)}
+      winRate={winRate}
+      totalPredictions={totalPredictions}
+      totalEarned={totalEarned}
       balance={balance}
-      initialHistory={history}
-      initialSettings={{
-        username: profile?.username ?? "",
-        notifyOnResolution: settings?.notify_on_resolution ?? true,
-        notifyOnNewMarket: settings?.notify_on_new_market ?? false,
-      }}
+      initialSettings={settingsValues}
     />
   );
 }
