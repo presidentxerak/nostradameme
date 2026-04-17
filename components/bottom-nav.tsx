@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
 
@@ -9,7 +10,7 @@ interface BottomNavProps {
   active: NavPage;
 }
 
-const NAV_ITEMS: { key: NavPage; href: string; label: string; icon: JSX.Element }[] = [
+const NAV_ITEMS: { key: NavPage; href: string; label: string; icon: React.ReactNode }[] = [
   {
     key: "oracle",
     href: "/",
