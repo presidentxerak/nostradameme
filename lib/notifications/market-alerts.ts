@@ -112,10 +112,12 @@ export async function notifyUpcomingMarkets(
   };
 }
 
+type DailySlot = "morning" | "noon" | "night";
+
 function findUpcomingSlot(
   now: Date,
-): { slot: MarketSlot; startAt: Date } | null {
-  const slots: MarketSlot[] = ["morning", "noon", "night"];
+): { slot: DailySlot; startAt: Date } | null {
+  const slots: DailySlot[] = ["morning", "noon", "night"];
   for (const slot of slots) {
     // Check today and tomorrow (for slots near midnight UTC).
     for (const offset of [0, 1]) {
