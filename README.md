@@ -175,6 +175,45 @@ computed title tier (see `lib/oracle/titles.ts`).
 
 ---
 
+## Web Push notifications (free, browser + mobile PWA)
+
+Players can opt in to receive a notification 15 minutes before each new
+prophecy opens. The notification is delivered via the browser's native
+Web Push API — no third-party service required, fully free at any scale.
+
+### Generate VAPID keys (one-time)
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Add the output to your environment variables in Vercel:
+
+```
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=<public key>
+VAPID_PRIVATE_KEY=<private key>
+VAPID_SUBJECT=mailto:hello@nostradameme.com
+```
+
+### How it works
+
+1. User opens Settings → toggles "Enable push notifications"
+2. Browser asks permission → user accepts → subscription stored in
+   `push_subscriptions` table (one row per device)
+3. Cron `/api/cron/notify-upcoming-markets` runs every 5 minutes
+4. When a slot opens within 15 minutes, the cron sends a push to every
+   user with `notify_on_new_market = true` and a stored subscription
+5. Email (Resend) is sent as fallback to opted-in users without a
+   push subscription
+
+### Costs
+
+- Web Push: **0€** forever, unlimited
+- Email (Resend free tier): **0€** up to 3 000 emails/month
+- After: $20/month for 50 000 emails
+
+---
+
 ## Feature flags
 
 - `FEATURE_ENABLE_PAYOUTS=false` → payouts credit internal balances only.

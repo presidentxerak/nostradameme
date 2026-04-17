@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
+import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { COPY } from "@/lib/config/copy";
 import { formatUsd } from "@/lib/utils/currency";
 
@@ -125,6 +126,12 @@ export function SettingsForm({
               setValues((s) => ({ ...s, notifyOnNewMarket: v }))
             }
           />
+        </div>
+        <div className="mt-4 border-t border-border pt-4">
+          <p className="mb-2 text-xs uppercase tracking-widest text-text-muted">
+            {COPY.profile.settings.pushTitle}
+          </p>
+          <PushNotificationToggle />
         </div>
       </Card>
 

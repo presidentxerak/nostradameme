@@ -48,6 +48,10 @@ const EnvSchema = z.object({
     .transform((v) => v === "true"),
 
   RESEND_API_KEY: z.string().default(""),
+
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().default(""),
+  VAPID_PRIVATE_KEY: z.string().default(""),
+  VAPID_SUBJECT: z.string().default("mailto:hello@nostradameme.com"),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -75,6 +79,9 @@ const parsed = EnvSchema.safeParse({
   FEATURE_ENABLE_PAYOUTS: process.env.FEATURE_ENABLE_PAYOUTS,
   FEATURE_ENABLE_ONRAMP: process.env.FEATURE_ENABLE_ONRAMP,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+  VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY,
+  VAPID_SUBJECT: process.env.VAPID_SUBJECT,
 });
 
 if (!parsed.success) {
