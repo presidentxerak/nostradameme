@@ -1,6 +1,6 @@
-import { COPY } from "@/lib/config/copy";
 import { OraclePageClient, type OraclePageSlotData } from "./oracle-page-client";
 import type { SlotKey } from "@/components/slot-tabs";
+import { generateDemoSlots } from "@/lib/markets/demo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -12,6 +12,13 @@ const EMPTY_SLOTS: OraclePageSlotData[] = [
 ];
 
 async function loadData() {
+  let user: { id: string; email: string | null } | null = null;
+  let slotData: OraclePageSlotData[] = EMPTY_SLOTS;
+  let balance = 0;
+  let username = "anon_oracle";
+  let fromDb = false;
+
+  // 1. Try loading from Supabase.
   try {
     const { getSessionUser } = await import("@/lib/auth/session");
     const {
@@ -24,18 +31,16 @@ async function loadData() {
     const { getAdminSupabase } = await import("@/lib/supabase/admin");
     const { resolveUsername } = await import("@/lib/utils/meme-names");
 
-    let user: { id: string; email: string | null } | null = null;
     try {
       user = await getSessionUser();
     } catch {
-      // Not authenticated or Supabase unavailable.
+      // auth unavailable
     }
 
-    let slotData: OraclePageSlotData[] = EMPTY_SLOTS;
     try {
       const slots = await getOpenMarketsBySlot();
       const slotKeys: SlotKey[] = ["morning", "noon", "night"];
-      slotData = await Promise.all(
+      const built = await Promise.all(
         slotKeys.map(async (slot) => {
           const market = slots[slot];
           if (!market) {
@@ -54,12 +59,15 @@ async function loadData() {
           };
         }),
       );
+      const hasAny = built.some((s) => s.market !== null);
+      if (hasAny) {
+        slotData = built;
+        fromDb = true;
+      }
     } catch {
-      // DB unreachable — empty markets.
+      // DB unreachable
     }
 
-    let balance = 0;
-    let username = "anon_oracle";
     try {
       if (user) {
         balance = await getUserBalance(user.id);
@@ -73,14 +81,22 @@ async function loadData() {
         username = resolveUsername(user.id, profile?.username ?? null);
       }
     } catch {
-      // Profile fetch failed.
+      // profile unavailable
     }
-
-    return { user, slotData, balance, username };
   } catch {
-    // Module import failed — Supabase not configured at all.
-    return { user: null, slotData: EMPTY_SLOTS, balance: 0, username: "anon_oracle" };
+    // Supabase modules failed to load
   }
+
+  // 2. Fallback: generate demo markets from live CoinGecko prices.
+  if (!fromDb) {
+    try {
+      slotData = await generateDemoSlots();
+    } catch {
+      // CoinGecko also unavailable — keep empty slots.
+    }
+  }
+
+  return { user, slotData, balance, username };
 }
 
 export default async function OraclePage() {
