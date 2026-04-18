@@ -1,9 +1,9 @@
 import { OraclePageClient, type OraclePageSlotData } from "./oracle-page-client";
-import type { SlotKey } from "@/components/slot-tabs";
-import { generateDemoSlots } from "@/lib/markets/demo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+type SlotKey = "morning" | "noon" | "night";
 
 const EMPTY_SLOTS: OraclePageSlotData[] = [
   { slot: "morning", market: null, pools: null, feed: [], userHasPosition: false, userPositionSide: null, userPositionAmount: null },
@@ -16,9 +16,7 @@ async function loadData() {
   let slotData: OraclePageSlotData[] = EMPTY_SLOTS;
   let balance = 0;
   let username = "anon_oracle";
-  let fromDb = false;
 
-  // 1. Try loading from Supabase.
   try {
     const { getSessionUser } = await import("@/lib/auth/session");
     const {
@@ -40,7 +38,7 @@ async function loadData() {
     try {
       const slots = await getOpenMarketsBySlot();
       const slotKeys: SlotKey[] = ["morning", "noon", "night"];
-      const built = await Promise.all(
+      slotData = await Promise.all(
         slotKeys.map(async (slot) => {
           const market = slots[slot];
           if (!market) {
@@ -59,11 +57,6 @@ async function loadData() {
           };
         }),
       );
-      const hasAny = built.some((s) => s.market !== null);
-      if (hasAny) {
-        slotData = built;
-        fromDb = true;
-      }
     } catch {
       // DB unreachable
     }
@@ -85,15 +78,6 @@ async function loadData() {
     }
   } catch {
     // Supabase modules failed to load
-  }
-
-  // 2. Fallback: generate demo markets from live CoinGecko prices.
-  if (!fromDb) {
-    try {
-      slotData = await generateDemoSlots();
-    } catch {
-      // CoinGecko also unavailable — keep empty slots.
-    }
   }
 
   return { user, slotData, balance, username };

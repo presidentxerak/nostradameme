@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
 import { OracleVideo } from "@/components/oracle-video";
 import { ProphecyCard } from "@/components/prophecy-card";
@@ -157,6 +158,9 @@ export function OraclePageClient(props: OraclePageClientProps) {
           {COPY.header.logo}
         </span>
         <div className="flex items-center gap-3">
+          <Link href="/rules" className="text-xs text-text-muted hover:text-accent-glow transition-colors">
+            Rules
+          </Link>
           {props.isAuthed && (
             <span className="text-sm text-text-primary font-bold">
               {formatUsd(balance)}
@@ -205,8 +209,15 @@ export function OraclePageClient(props: OraclePageClientProps) {
                   onBet={handleBet}
                 />
               ) : (
-                <div className="rounded-2xl border border-border/40 bg-surface/90 backdrop-blur-md p-8 text-center">
-                  <p className="text-base text-text-muted">{COPY.oracle.silent}</p>
+                <div className="rounded-2xl border border-border/40 bg-surface/90 backdrop-blur-md p-6 text-center space-y-3">
+                  <p className="text-lg text-text-secondary font-bold">{COPY.oracle.silent}</p>
+                  <p className="text-sm text-text-muted">
+                    Next prophecy at 9:00 AM, 12:00 PM, or midnight.
+                    Enable notifications to never miss one.
+                  </p>
+                  <Link href="/rules" className="inline-block text-sm text-accent-glow hover:underline">
+                    How does it work?
+                  </Link>
                 </div>
               )}
             </AnimatePresence>
