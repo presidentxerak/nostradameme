@@ -178,12 +178,20 @@ export function OraclePageClient(props: OraclePageClientProps) {
       {/* Main content — video + overlapping card */}
       <main className="flex-1 overflow-y-auto pb-20">
         <div className="mx-auto flex max-w-lg flex-col items-center">
-          {/* Oracle video */}
-          <div className="w-full">
+          {/* Oracle video + quote overlay */}
+          <div className="w-full relative">
             <OracleVideo
               status={market?.status ?? "draft"}
               className="aspect-[4/3] w-full"
             />
+            {/* Oracle quote overlaid on video */}
+            {market && (
+              <div className="absolute bottom-14 left-0 right-0 px-6 text-center">
+                <p className="text-sm italic text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] leading-relaxed">
+                  &ldquo;{market.oracle_quote}&rdquo;
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Prophecy card — overlaps the video by pulling up */}

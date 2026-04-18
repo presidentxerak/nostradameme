@@ -38,33 +38,32 @@ export function CountdownGauge({ startAt, endAt, slot, locked }: CountdownGaugeP
     return () => clearInterval(interval);
   }, [startAt, endAt]);
 
-  const urgency = pct < 10 ? "urgent" : pct < 30 ? "warning" : "normal";
-
   return (
-    <div className="relative w-full overflow-hidden rounded-full" style={{ height: 20 }}>
+    <div className="relative w-full overflow-hidden" style={{ height: 26 }}>
       {/* Background track */}
-      <div className="absolute inset-0 bg-background/60" />
-      {/* Fill gauge — green-blue to orange based on time left */}
+      <div
+        className="absolute inset-0 bg-background/60"
+        style={{
+          clipPath: "polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%)",
+        }}
+      />
+      {/* Orange fill — arrow shape */}
       <div
         className="absolute inset-y-0 left-0 transition-all duration-1000"
         style={{
           width: `${pct}%`,
-          background:
-            urgency === "urgent"
-              ? "linear-gradient(90deg, #ff4400, #ff8800)"
-              : urgency === "warning"
-                ? "linear-gradient(90deg, #ff8800, #ffaa00)"
-                : "linear-gradient(90deg, #00cc9e, #00aadd)",
+          background: "linear-gradient(90deg, #ff8800, #ff6600)",
+          clipPath: "polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%)",
         }}
       />
-      {/* Text overlay — always visible */}
-      <div className="absolute inset-0 flex items-center justify-center gap-2 text-[11px] font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+      {/* Text overlay */}
+      <div className="absolute inset-0 flex items-center justify-center gap-2 text-xs font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
         {locked ? (
           <span>{COPY.oracle.locked}</span>
         ) : (
           <>
             <span>{SLOT_LABEL[slot]}</span>
-            <span>\u2022</span>
+            <span>-</span>
             <span>{remaining} remaining</span>
           </>
         )}

@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import { motion, useAnimationControls } from "framer-motion";
 import { useReducedMotionPreference } from "@/lib/hooks/use-reduced-motion";
 import { COPY } from "@/lib/config/copy";
-import { formatUsdCompact } from "@/lib/utils/currency";
 import type { MarketPools } from "@/types/app";
 
 interface TugOfWarProps {
@@ -35,7 +34,7 @@ export function TugOfWar({ pools }: TugOfWarProps) {
       <motion.div
         animate={controls}
         className="relative w-full overflow-hidden rounded-full"
-        style={{ height: 20 }}
+        style={{ height: 26 }}
       >
         {/* YES fill */}
         <div
@@ -64,9 +63,6 @@ export function TugOfWar({ pools }: TugOfWarProps) {
           {100 - yesPct}% {COPY.bet.no}
         </span>
       </motion.div>
-      <div className="text-center text-[10px] text-text-muted">
-        {formatUsdCompact(pools.totalVolume)} total
-      </div>
     </div>
   );
 }

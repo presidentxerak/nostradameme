@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 import { TugOfWar } from "@/components/tug-of-war";
 import { YesNoButtons } from "@/components/yes-no-buttons";
 import { CountdownGauge } from "@/components/countdown-gauge";
-import { CryptoIcon } from "@/components/crypto-icon";
 import { COPY } from "@/lib/config/copy";
 import { msUntil } from "@/lib/utils/dates";
+import { formatUsdCompact } from "@/lib/utils/currency";
 import type { MarketWithAsset, MarketPools } from "@/types/app";
 
 interface ProphecyCardProps {
@@ -43,23 +43,20 @@ export function ProphecyCard({
       transition={{ duration: 0.3 }}
     >
       <div className="rounded-2xl border border-accent-dim/30 bg-surface/90 backdrop-blur-md px-4 py-3 border-glow-accent">
-        {/* Ticker + crypto icon */}
-        <div className="mb-2 flex items-center gap-2">
-          <CryptoIcon coingeckoId={market.asset.coingecko_id} size={28} />
+        {/* Ticker + total volume on same line */}
+        <div className="mb-2 flex items-center justify-between">
           <span className="text-lg font-bold text-text-primary tracking-wide">
             {market.asset.asset_key}
+          </span>
+          <span className="text-lg font-bold text-gold-glow text-glow-gold">
+            {formatUsdCompact(pools.totalVolume)}
           </span>
         </div>
 
         {/* Question */}
-        <h2 className="mb-2 font-display text-xl leading-snug text-text-primary sm:text-2xl">
+        <h2 className="mb-3 font-display text-xl leading-snug text-text-primary sm:text-2xl">
           {market.question}
         </h2>
-
-        {/* Oracle quote */}
-        <p className="mb-3 text-xs italic text-text-muted leading-relaxed">
-          &ldquo;{market.oracle_quote}&rdquo;
-        </p>
 
         {/* Countdown gauge — time remaining */}
         <CountdownGauge
