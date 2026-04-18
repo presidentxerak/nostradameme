@@ -175,19 +175,19 @@ export function OraclePageClient(props: OraclePageClientProps) {
         </div>
       )}
 
-      {/* Main scrollable content */}
-      <main className="flex-1 overflow-y-auto px-4 pb-20">
+      {/* Main content — video + overlapping card */}
+      <main className="flex-1 overflow-y-auto pb-20">
         <div className="mx-auto flex max-w-lg flex-col items-center">
-          {/* Oracle video — switches based on market state */}
-          <div className="mt-3 w-full">
+          {/* Oracle video */}
+          <div className="w-full">
             <OracleVideo
               status={market?.status ?? "draft"}
-              className="aspect-square w-full max-w-[400px] mx-auto"
+              className="aspect-[4/3] w-full"
             />
           </div>
 
-          {/* Prophecy card */}
-          <div className="mt-4 w-full">
+          {/* Prophecy card — overlaps the video by pulling up */}
+          <div className="w-full px-3 -mt-10 relative z-10">
             <AnimatePresence mode="wait">
               {market && pools ? (
                 <ProphecyCard
@@ -197,15 +197,15 @@ export function OraclePageClient(props: OraclePageClientProps) {
                   onBet={handleBet}
                 />
               ) : (
-                <div className="rounded-2xl border border-border/40 bg-surface/60 p-8 text-center">
+                <div className="rounded-2xl border border-border/40 bg-surface/90 backdrop-blur-md p-8 text-center">
                   <p className="text-base text-text-muted">{COPY.oracle.silent}</p>
                 </div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Live feed — BELOW the card */}
-          <div className="mt-4 w-full">
+          {/* Live feed */}
+          <div className="mt-3 w-full px-3">
             <LiveFeedTicker feed={feed} />
           </div>
         </div>

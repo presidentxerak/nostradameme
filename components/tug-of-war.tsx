@@ -23,59 +23,49 @@ export function TugOfWar({ pools }: TugOfWarProps) {
     if (delta > 50 && !reduce) {
       controls
         .start({
-          x: [0, -6, 10, -3, 0],
-          transition: { duration: 0.5, ease: "easeInOut" },
+          x: [0, -4, 6, -2, 0],
+          transition: { duration: 0.4, ease: "easeInOut" },
         })
         .catch(() => undefined);
     }
   }, [pools.totalVolume, controls, reduce]);
 
-  const orbPosition = `${Math.max(8, Math.min(92, yesPct))}%`;
-
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <motion.div
         animate={controls}
-        className="relative h-10 w-full overflow-hidden rounded-full border border-border bg-background/80"
+        className="relative w-full overflow-hidden rounded-full"
+        style={{ height: 20 }}
       >
-        {/* YES fill — vivid blue-green gradient */}
+        {/* YES fill */}
         <div
           className="absolute inset-y-0 left-0 transition-all duration-700"
           style={{
             width: `${yesPct}%`,
             background: "linear-gradient(90deg, #00cc9e, #00d4ff)",
-            opacity: 0.6,
           }}
         />
-        {/* NO fill — vivid red-magenta gradient */}
+        {/* NO fill */}
         <div
           className="absolute inset-y-0 right-0 transition-all duration-700"
           style={{
             width: `${100 - yesPct}%`,
             background: "linear-gradient(90deg, #ff2222, #cc004e)",
-            opacity: 0.6,
           }}
         />
-        {/* Center line */}
-        <div className="absolute inset-y-1 left-1/2 w-px -translate-x-1/2 bg-text-muted/20" />
-        {/* Orb knot */}
-        <motion.div
-          animate={{ left: orbPosition }}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          className="absolute top-1/2 z-10 -translate-x-1/2 -translate-y-1/2"
-        >
-          <div className="relative">
-            <div className="absolute -inset-1 rounded-full bg-accent-glow/40 blur-md" />
-            <div className="relative h-6 w-6 rounded-full border border-accent bg-surface shadow-lg shadow-accent/30" />
-          </div>
-        </motion.div>
-      </motion.div>
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-yes-glow font-bold text-glow-yes">{COPY.bet.yes} {yesPct}%</span>
-        <span className="text-text-muted text-xs">
-          {formatUsdCompact(pools.totalVolume)}
+        {/* Center marker */}
+        <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/20" />
+        {/* YES label inside */}
+        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white drop-shadow-md">
+          {COPY.bet.yes} {yesPct}%
         </span>
-        <span className="text-no-glow font-bold text-glow-no">{100 - yesPct}% {COPY.bet.no}</span>
+        {/* NO label inside */}
+        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white drop-shadow-md">
+          {100 - yesPct}% {COPY.bet.no}
+        </span>
+      </motion.div>
+      <div className="text-center text-[10px] text-text-muted">
+        {formatUsdCompact(pools.totalVolume)} total
       </div>
     </div>
   );
