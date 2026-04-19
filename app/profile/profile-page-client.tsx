@@ -173,7 +173,7 @@ export function ProfilePageClient(props: ProfilePageClientProps) {
                   oracleTitle={props.oracleTitle}
                   balance={props.balance}
                   onSave={handleSaveSettings}
-                  onAddFunds={() => setOnrampOpen(true)}
+                  onAddFunds={() => setDepositOpen(true)}
                   onSignOut={handleSignOut}
                   onCloseAccount={handleCloseAccount}
                 />
