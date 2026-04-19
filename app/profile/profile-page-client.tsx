@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { OracleIdentityCard } from "@/components/oracle-identity-card";
 import { LeaderboardTable } from "@/components/leaderboard-table";
 import { SettingsForm, type SettingsFormValues } from "@/components/settings-form";
-import { OnrampWidget } from "@/components/onramp-widget";
-import { BalanceDisplay } from "@/components/balance-display";
+import { SolDepositSheet } from "@/components/sol-deposit-sheet";
+import { SolWithdrawSheet } from "@/components/sol-withdraw-sheet";
 import { BottomNav } from "@/components/bottom-nav";
 import { AuthButton } from "@/components/auth-button";
 import { Button } from "@/components/ui/button";
@@ -37,7 +39,8 @@ export function ProfilePageClient(props: ProfilePageClientProps) {
   const [lbCurrent, setLbCurrent] = useState<LeaderboardEntry | null>(null);
   const [lbLoading, setLbLoading] = useState(false);
   const [lbUpdatedAt, setLbUpdatedAt] = useState<string | undefined>();
-  const [onrampOpen, setOnrampOpen] = useState(false);
+  const [depositOpen, setDepositOpen] = useState(false);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   useEffect(() => {
     if (tab !== "leaderboard") return;
@@ -145,19 +148,11 @@ export function ProfilePageClient(props: ProfilePageClientProps) {
 
               {/* Tab content */}
               {tab === "wallet" && (
-                <Card className="flex flex-col items-center gap-5 py-8">
-                  <p className="text-xs uppercase tracking-widest text-text-muted">
-                    {COPY.profile.identity.balance}
-                  </p>
-                  <p className="text-5xl font-bold text-text-primary">
-                    {formatUsd(props.balance)}
-                  </p>
-                  <div className="flex gap-3">
-                    <Button onClick={() => setOnrampOpen(true)} size="lg">
-                      {COPY.profile.identity.addFunds}
-                    </Button>
-                  </div>
-                </Card>
+                <WalletTab
+                  balance={props.balance}
+                  onDeposit={() => setDepositOpen(true)}
+                  onWithdraw={() => setWithdrawOpen(true)}
+                />
               )}
 
               {tab === "leaderboard" && (
@@ -190,7 +185,78 @@ export function ProfilePageClient(props: ProfilePageClientProps) {
 
       <BottomNav active="profile" />
 
-      <OnrampWidget open={onrampOpen} onOpenChange={setOnrampOpen} />
+      <SolDepositSheet open={depositOpen} onOpenChange={setDepositOpen} />
+      <SolWithdrawSheet open={withdrawOpen} onOpenChange={setWithdrawOpen} balance={props.balance} />
+    </div>
+  );
+}
+
+function WalletTab({
+  balance,
+  onDeposit,
+  onWithdraw,
+}: {
+  balance: number;
+  onDeposit: () => void;
+  onWithdraw: () => void;
+}) {
+  let walletConnected = false;
+  let walletAddress = "";
+  let connectWallet: (() => void) | null = null;
+
+  try {
+    const wallet = useWallet();
+    const modal = useWalletModal();
+    walletConnected = wallet.connected;
+    walletAddress = wallet.publicKey?.toBase58() ?? "";
+    connectWallet = () => modal.setVisible(true);
+  } catch {
+    // Solana not configured
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card className="flex flex-col items-center gap-4 py-6">
+        <p className="text-xs uppercase tracking-widest text-text-muted">
+          {COPY.profile.identity.balance}
+        </p>
+        <p className="text-5xl font-bold text-text-primary">
+          {formatUsd(balance)}
+        </p>
+      </Card>
+
+      {walletConnected ? (
+        <Card className="space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="h-3 w-3 rounded-full bg-yes" />
+            <span className="text-sm text-text-primary">Wallet connected</span>
+          </div>
+          <p className="text-xs text-text-muted break-all">
+            {walletAddress}
+          </p>
+          <div className="flex gap-3">
+            <Button onClick={onDeposit} className="flex-1" size="lg">
+              Deposit SOL
+            </Button>
+            <Button onClick={onWithdraw} variant="outline" className="flex-1" size="lg">
+              Withdraw
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <Card className="flex flex-col items-center gap-4 py-6">
+          <p className="text-sm text-text-secondary text-center">
+            Connect your Solana wallet to deposit and withdraw
+          </p>
+          <Button
+            onClick={() => connectWallet?.()}
+            size="lg"
+            disabled={!connectWallet}
+          >
+            Connect wallet
+          </Button>
+        </Card>
+      )}
     </div>
   );
 }

@@ -52,6 +52,11 @@ const EnvSchema = z.object({
   NEXT_PUBLIC_VAPID_PUBLIC_KEY: z.string().default(""),
   VAPID_PRIVATE_KEY: z.string().default(""),
   VAPID_SUBJECT: z.string().default("mailto:hello@nostradameme.com"),
+
+  NEXT_PUBLIC_SOLANA_NETWORK: z.string().default("mainnet-beta"),
+  NEXT_PUBLIC_SOLANA_RPC_URL: z.string().default("https://api.mainnet-beta.solana.com"),
+  NEXT_PUBLIC_SOLANA_TREASURY_ADDRESS: z.string().default(""),
+  SOLANA_TREASURY_PRIVATE_KEY: z.string().default(""),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
@@ -82,6 +87,10 @@ const parsed = EnvSchema.safeParse({
   NEXT_PUBLIC_VAPID_PUBLIC_KEY: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
   VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY,
   VAPID_SUBJECT: process.env.VAPID_SUBJECT,
+  NEXT_PUBLIC_SOLANA_NETWORK: process.env.NEXT_PUBLIC_SOLANA_NETWORK,
+  NEXT_PUBLIC_SOLANA_RPC_URL: process.env.NEXT_PUBLIC_SOLANA_RPC_URL,
+  NEXT_PUBLIC_SOLANA_TREASURY_ADDRESS: process.env.NEXT_PUBLIC_SOLANA_TREASURY_ADDRESS,
+  SOLANA_TREASURY_PRIVATE_KEY: process.env.SOLANA_TREASURY_PRIVATE_KEY,
 });
 
 if (!parsed.success) {

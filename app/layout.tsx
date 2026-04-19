@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Providers } from "@/app/providers";
+import { SolanaProvider } from "@/components/solana-provider";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { COPY } from "@/lib/config/copy";
 import "./globals.css";
@@ -51,7 +52,9 @@ export default function RootLayout({
       className={`dark ${jacquard.variable} ${silkscreen.variable}`}
     >
       <body className="min-h-screen bg-background font-sans text-text-primary antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <SolanaProvider>{children}</SolanaProvider>
+        </Providers>
         <ServiceWorkerRegister />
       </body>
     </html>

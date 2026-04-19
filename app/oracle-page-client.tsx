@@ -9,7 +9,7 @@ import { LiveFeedTicker } from "@/components/live-feed-ticker";
 import { BetSheet } from "@/components/bet-sheet";
 import { ProphecySealed } from "@/components/prophecy-sealed";
 import { RevealAnimation } from "@/components/reveal-animation";
-import { OnrampWidget } from "@/components/onramp-widget";
+import { SolDepositSheet } from "@/components/sol-deposit-sheet";
 import { BottomNav } from "@/components/bottom-nav";
 import { AuthButton } from "@/components/auth-button";
 import { BalanceDisplay } from "@/components/balance-display";
@@ -244,7 +244,7 @@ export function OraclePageClient(props: OraclePageClientProps) {
         onAddFunds={handleAddFunds}
       />
 
-      <OnrampWidget open={onrampOpen} onOpenChange={setOnrampOpen} />
+      <SolDepositSheet open={onrampOpen} onOpenChange={setOnrampOpen} />
       <ProphecySealed visible={sealed !== null} side={sealed} />
 
       <RevealAnimation
