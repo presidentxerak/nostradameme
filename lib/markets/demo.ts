@@ -8,8 +8,9 @@ import { generateMemeUsername } from "@/lib/utils/meme-names";
 import { fnv1a } from "@/lib/utils/hash";
 import type { MarketWithAsset, MarketPools, LiveFeedEntry } from "@/types/app";
 import type { OraclePageSlotData } from "@/app/oracle-page-client";
-import type { SlotKey } from "@/components/slot-tabs";
 import type { MarketSlot, SupportedAssetRow } from "@/types/db";
+
+type SlotKey = "morning" | "noon" | "night";
 
 const ASSETS: SupportedAssetRow[] = [
   {

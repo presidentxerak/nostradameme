@@ -200,20 +200,6 @@ function WalletTab({
   onDeposit: () => void;
   onWithdraw: () => void;
 }) {
-  let walletConnected = false;
-  let walletAddress = "";
-  let connectWallet: (() => void) | null = null;
-
-  try {
-    const wallet = useWallet();
-    const modal = useWalletModal();
-    walletConnected = wallet.connected;
-    walletAddress = wallet.publicKey?.toBase58() ?? "";
-    connectWallet = () => modal.setVisible(true);
-  } catch {
-    // Solana not configured
-  }
-
   return (
     <div className="space-y-4">
       <Card className="flex flex-col items-center gap-4 py-6">
@@ -224,39 +210,51 @@ function WalletTab({
           {formatUsd(balance)}
         </p>
       </Card>
-
-      {walletConnected ? (
-        <Card className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-full bg-yes" />
-            <span className="text-sm text-text-primary">Wallet connected</span>
-          </div>
-          <p className="text-xs text-text-muted break-all">
-            {walletAddress}
-          </p>
-          <div className="flex gap-3">
-            <Button onClick={onDeposit} className="flex-1" size="lg">
-              Deposit SOL
-            </Button>
-            <Button onClick={onWithdraw} variant="outline" className="flex-1" size="lg">
-              Withdraw
-            </Button>
-          </div>
-        </Card>
-      ) : (
-        <Card className="flex flex-col items-center gap-4 py-6">
-          <p className="text-sm text-text-secondary text-center">
-            Connect your Solana wallet to deposit and withdraw
-          </p>
-          <Button
-            onClick={() => connectWallet?.()}
-            size="lg"
-            disabled={!connectWallet}
-          >
-            Connect wallet
-          </Button>
-        </Card>
-      )}
+      <SolanaWalletCard onDeposit={onDeposit} onWithdraw={onWithdraw} />
     </div>
+  );
+}
+
+function SolanaWalletCard({
+  onDeposit,
+  onWithdraw,
+}: {
+  onDeposit: () => void;
+  onWithdraw: () => void;
+}) {
+  const wallet = useWallet();
+  const modal = useWalletModal();
+  const connected = wallet.connected;
+  const address = wallet.publicKey?.toBase58() ?? "";
+
+  if (connected) {
+    return (
+      <Card className="space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded-full bg-yes" />
+          <span className="text-sm text-text-primary">Wallet connected</span>
+        </div>
+        <p className="text-xs text-text-muted break-all">{address}</p>
+        <div className="flex gap-3">
+          <Button onClick={onDeposit} className="flex-1" size="lg">
+            Deposit SOL
+          </Button>
+          <Button onClick={onWithdraw} variant="outline" className="flex-1" size="lg">
+            Withdraw
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="flex flex-col items-center gap-4 py-6">
+      <p className="text-sm text-text-secondary text-center">
+        Connect your Solana wallet to deposit and withdraw
+      </p>
+      <Button onClick={() => modal.setVisible(true)} size="lg">
+        Connect wallet
+      </Button>
+    </Card>
   );
 }

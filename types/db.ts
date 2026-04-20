@@ -42,6 +42,8 @@ export interface ProfileRow {
   role: UserRole;
   xrpl_address: string | null;
   privy_user_id: string | null;
+  solana_address: string | null;
+  payment_mode: string;
   win_rate: number;
   total_predictions: number;
   total_won: number;
