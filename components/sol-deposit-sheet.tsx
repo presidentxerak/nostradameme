@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import type { Wallet } from "@solana/wallet-adapter-react";
 import {
   PublicKey,
   SystemProgram,
@@ -20,14 +20,14 @@ interface SolDepositSheetProps {
 }
 
 export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
-  const { publicKey, sendTransaction, connected } = useWallet();
+  const { publicKey, sendTransaction, connected, wallets, select, connect } = useWallet();
   const { connection } = useConnection();
-  const modal = useWalletModal();
   const [solAmount, setSolAmount] = useState("0.1");
   const [solPrice, setSolPrice] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState<"idle" | "sent" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -41,6 +41,20 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
 
   const sol = Number(solAmount);
   const usdValue = solPrice && sol > 0 ? (sol * solPrice).toFixed(2) : "—";
+
+  const handleConnectWallet = async (wallet: Wallet) => {
+    setConnecting(true);
+    setError(null);
+    try {
+      select(wallet.adapter.name);
+      await new Promise((r) => setTimeout(r, 200));
+      await connect();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection failed");
+    } finally {
+      setConnecting(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!publicKey || !connected || !SOLANA_CONFIG.treasuryAddress) return;
@@ -80,36 +94,78 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
     }
   };
 
+  const detectedWallets = wallets.filter(
+    (w) => w.readyState === "Installed" || w.readyState === "Loadable",
+  );
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
         <SheetTitle className="mb-1 font-sans text-xl font-bold text-accent-glow">
           Deposit SOL
         </SheetTitle>
-        <SheetDescription className="mb-4 text-sm text-text-secondary">
-          Send SOL from your wallet. Your balance updates in seconds.
-        </SheetDescription>
 
-        {/* Step 1: Connect wallet if not connected */}
+        {/* Step 1: Connect wallet */}
         {!connected ? (
-          <div className="flex flex-col items-center gap-5 py-8">
-            <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-8 w-8 text-accent-glow">
-                <rect x="2" y="6" width="20" height="12" rx="2" />
-                <path d="M22 10h-4a2 2 0 100 4h4" />
-              </svg>
+          <>
+            <SheetDescription className="mb-4 text-sm text-text-secondary">
+              Select your wallet to continue
+            </SheetDescription>
+
+            <div className="flex flex-col gap-2">
+              {detectedWallets.length > 0 ? (
+                detectedWallets.map((wallet) => (
+                  <button
+                    key={wallet.adapter.name}
+                    onClick={() => handleConnectWallet(wallet)}
+                    disabled={connecting}
+                    className="flex items-center gap-3 rounded-xl border border-border bg-surface/60 px-4 py-3 text-left transition-all hover:border-accent/50 hover:bg-surface disabled:opacity-50"
+                  >
+                    {wallet.adapter.icon && (
+                      <img
+                        src={wallet.adapter.icon}
+                        alt={wallet.adapter.name}
+                        className="h-8 w-8 rounded-lg"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <p className="font-sans text-sm font-bold text-text-primary">
+                        {wallet.adapter.name}
+                      </p>
+                      <p className="text-xs text-text-muted">
+                        {wallet.readyState === "Installed" ? "Detected" : "Available"}
+                      </p>
+                    </div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-text-muted">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-xl border border-border bg-surface/60 p-6 text-center">
+                  <p className="text-sm text-text-secondary mb-3">
+                    No wallet detected
+                  </p>
+                  <a
+                    href="https://phantom.app/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-accent-glow underline"
+                  >
+                    Install Phantom
+                  </a>
+                </div>
+              )}
             </div>
-            <p className="text-sm text-text-secondary text-center">
-              Connect your Solana wallet first
-            </p>
-            <Button size="lg" onClick={() => modal.setVisible(true)}>
-              Connect wallet
-            </Button>
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+
+            {error && <p className="mt-3 text-sm text-no-glow text-center">{error}</p>}
+
+            <Button variant="ghost" className="mt-4 w-full" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-          </div>
+          </>
         ) : status === "sent" ? (
+          /* Step 3: Success */
           <div className="flex flex-col items-center gap-4 py-6">
             <div className="h-16 w-16 rounded-full bg-yes/20 flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="h-8 w-8 text-yes">
@@ -125,10 +181,16 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
             </Button>
           </div>
         ) : (
+          /* Step 2: Choose amount + send */
           <>
+            <SheetDescription className="mb-4 text-sm text-text-secondary">
+              Send SOL from your wallet. Your balance updates in seconds.
+            </SheetDescription>
+
             <p className="mb-3 text-xs text-text-muted">
               Wallet: {publicKey?.toBase58().slice(0, 8)}...{publicKey?.toBase58().slice(-4)}
             </p>
+
             <div className="space-y-3">
               <div>
                 <label htmlFor="sol-amount" className="text-xs text-text-muted mb-1 block">
