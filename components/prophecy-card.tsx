@@ -62,7 +62,6 @@ export function ProphecyCard({
         <CountdownGauge
           startAt={market.start_at}
           endAt={market.end_at}
-          slot={market.slot}
           locked={locked}
         />
 

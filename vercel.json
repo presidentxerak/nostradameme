@@ -2,20 +2,8 @@
   "framework": "nextjs",
   "crons": [
     {
-      "path": "/api/cron/create-daily-morning-market",
-      "schedule": "55 6 * * *"
-    },
-    {
-      "path": "/api/cron/create-daily-noon-market",
-      "schedule": "55 9 * * *"
-    },
-    {
-      "path": "/api/cron/create-daily-night-market",
-      "schedule": "55 21 * * *"
-    },
-    {
-      "path": "/api/cron/create-weekly-market",
-      "schedule": "5 0 * * 1"
+      "path": "/api/cron/create-hourly-market",
+      "schedule": "55 * * * *"
     },
     {
       "path": "/api/cron/resolve-markets",

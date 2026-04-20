@@ -36,33 +36,24 @@ export default function RulesPage() {
 
           <section>
             <h2 className="font-display text-xl text-accent-glow mb-3">
-              Daily schedule
+              Schedule
             </h2>
-            <div className="rounded-xl border border-border/40 bg-surface/60 overflow-hidden">
-              <div className="grid grid-cols-3 text-center text-xs font-bold text-text-muted border-b border-border/40 py-2">
-                <span>Prophecy</span>
-                <span>Opens</span>
-                <span>Closes</span>
-              </div>
-              <div className="grid grid-cols-3 text-center text-sm py-3 border-b border-border/20">
-                <span className="text-text-primary font-bold">Dawn</span>
-                <span className="text-text-secondary">9:00 AM</span>
-                <span className="text-text-secondary">12:00 PM</span>
-              </div>
-              <div className="grid grid-cols-3 text-center text-sm py-3 border-b border-border/20">
-                <span className="text-text-primary font-bold">Noon</span>
-                <span className="text-text-secondary">12:00 PM</span>
-                <span className="text-text-secondary">12:00 AM</span>
-              </div>
-              <div className="grid grid-cols-3 text-center text-sm py-3">
-                <span className="text-text-primary font-bold">Dusk</span>
-                <span className="text-text-secondary">12:00 AM</span>
-                <span className="text-text-secondary">9:00 AM</span>
-              </div>
+            <div className="rounded-xl border border-border/40 bg-surface/60 p-4 space-y-2">
+              <p className="text-sm text-text-primary font-bold">
+                24 prophecies per day — one every hour
+              </p>
+              <p className="text-sm text-text-secondary">
+                A new prophecy opens at the top of every hour (00:00, 01:00, 02:00... 23:00 UTC)
+                and lasts exactly 1 hour. The oracle never sleeps.
+              </p>
+              <p className="text-sm text-text-secondary">
+                Each hour features a different crypto asset (BTC, ETH, SOL)
+                rotating automatically.
+              </p>
             </div>
             <p className="mt-2 text-xs text-text-muted">
-              All times shown in your local timezone. New prophecies appear
-              automatically. If you miss one, you cannot bet on it.
+              All times in UTC. New prophecies appear automatically.
+              If you miss one, you cannot bet on it.
             </p>
           </section>
 

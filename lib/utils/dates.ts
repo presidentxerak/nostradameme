@@ -42,23 +42,41 @@ export function isLocked(endIso: string, lockBeforeMs = 5 * MINUTE): boolean {
   return msUntil(endIso) <= lockBeforeMs;
 }
 
+export function hourlySlotStart(date = new Date()): Date {
+  return new Date(
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      date.getUTCHours(),
+      0, 0, 0,
+    ),
+  );
+}
+
+export function hourlySlotEnd(date = new Date()): Date {
+  return new Date(hourlySlotStart(date).getTime() + HOUR);
+}
+
+export function hourToSlotName(utcHour: number): "morning" | "noon" | "night" {
+  if (utcHour >= 5 && utcHour < 12) return "morning";
+  if (utcHour >= 12 && utcHour < 20) return "noon";
+  return "night";
+}
+
 export function slotStartUtc(
   slot: "morning" | "noon" | "night",
   date = new Date(),
 ): Date {
   const hours = slot === "morning" ? 7 : slot === "noon" ? 10 : 22;
-  const d = new Date(
+  return new Date(
     Date.UTC(
       date.getUTCFullYear(),
       date.getUTCMonth(),
       date.getUTCDate(),
-      hours,
-      0,
-      0,
-      0,
+      hours, 0, 0, 0,
     ),
   );
-  return d;
 }
 
 export function slotEndUtc(
@@ -72,15 +90,7 @@ export function slotEndUtc(
 
 export function weekStartUtc(date = new Date()): Date {
   const d = new Date(
-    Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
-      0,
-      5,
-      0,
-      0,
-    ),
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 5, 0, 0),
   );
   const day = d.getUTCDay();
   const diff = day === 0 ? -6 : 1 - day;

@@ -6,23 +6,22 @@ function formatAmount(n: number): string {
   return `$${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 }
 
+function formatHour(endAt: Date): string {
+  const h = endAt.getUTCHours();
+  const suffix = h >= 12 ? "PM" : "AM";
+  const display = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return `${display}:00 ${suffix} UTC`;
+}
+
 export function generateQuestion(
   asset: string,
-  slot: MarketSlot,
+  _slot: MarketSlot,
   operator: Operator,
   threshold: number,
-  _endAt: Date,
+  endAt: Date,
 ): string {
   const direction = operator === "gte" ? "above" : "below";
   const amt = formatAmount(threshold);
-  if (slot === "morning") {
-    return `Will ${asset} trade ${direction} ${amt} by noon?`;
-  }
-  if (slot === "noon") {
-    return `Will ${asset} be ${direction} ${amt} by midnight?`;
-  }
-  if (slot === "night") {
-    return `Will ${asset} close ${direction} ${amt} by morning?`;
-  }
-  return `Will ${asset} remain ${direction} ${amt} by weekly close?`;
+  const time = formatHour(endAt);
+  return `Will ${asset} trade ${direction} ${amt} by ${time}?`;
 }

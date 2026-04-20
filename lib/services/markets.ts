@@ -18,8 +18,8 @@ export async function getOpenMarketsBySlot(): Promise<
     .from("markets")
     .select("*, asset:supported_assets!markets_asset_id_fkey(*)")
     .in("status", ["open", "locked"])
-    .in("slot", ["morning", "noon", "night"])
-    .order("end_at", { ascending: true });
+    .order("start_at", { ascending: false })
+    .limit(5);
   const rows = (data ?? []) as Array<MarketRow & { asset: SupportedAssetRow }>;
   const out: Record<"morning" | "noon" | "night", MarketWithAsset | null> = {
     morning: null,
@@ -27,8 +27,9 @@ export async function getOpenMarketsBySlot(): Promise<
     night: null,
   };
   for (const r of rows) {
-    if (r.slot === "morning" || r.slot === "noon" || r.slot === "night") {
-      if (!out[r.slot]) out[r.slot] = r;
+    const s = r.slot as "morning" | "noon" | "night";
+    if (s === "morning" || s === "noon" || s === "night") {
+      if (!out[s]) out[s] = r;
     }
   }
   return out;

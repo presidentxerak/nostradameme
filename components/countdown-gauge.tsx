@@ -1,25 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatRemaining, msUntil } from "@/lib/utils/dates";
+import { formatRemaining } from "@/lib/utils/dates";
 import { COPY } from "@/lib/config/copy";
-import type { MarketSlot } from "@/types/db";
 
 interface CountdownGaugeProps {
   startAt: string;
   endAt: string;
-  slot: MarketSlot;
   locked: boolean;
 }
 
-const SLOT_LABEL: Record<MarketSlot, string> = {
-  morning: "Dawn 9h \u2192 12h",
-  noon: "Noon 12h \u2192 00h",
-  night: "Dusk 00h \u2192 9h",
-  weekly: "Weekly",
-};
+function formatTimeRange(startAt: string, endAt: string): string {
+  const s = new Date(startAt);
+  const e = new Date(endAt);
+  const fmtH = (d: Date) => {
+    const h = d.getUTCHours();
+    const suffix = h >= 12 ? "PM" : "AM";
+    const display = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return `${display}${suffix}`;
+  };
+  return `${fmtH(s)} \u2192 ${fmtH(e)} UTC`;
+}
 
-export function CountdownGauge({ startAt, endAt, slot, locked }: CountdownGaugeProps) {
+export function CountdownGauge({ startAt, endAt, locked }: CountdownGaugeProps) {
   const [remaining, setRemaining] = useState(() => formatRemaining(endAt));
   const [pct, setPct] = useState(100);
 
@@ -38,16 +41,16 @@ export function CountdownGauge({ startAt, endAt, slot, locked }: CountdownGaugeP
     return () => clearInterval(interval);
   }, [startAt, endAt]);
 
+  const timeRange = formatTimeRange(startAt, endAt);
+
   return (
     <div className="relative w-full overflow-hidden" style={{ height: 26 }}>
-      {/* Background track */}
       <div
         className="absolute inset-0 bg-background/60"
         style={{
           clipPath: "polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%)",
         }}
       />
-      {/* Orange fill — arrow shape */}
       <div
         className="absolute inset-y-0 left-0 transition-all duration-1000"
         style={{
@@ -56,13 +59,12 @@ export function CountdownGauge({ startAt, endAt, slot, locked }: CountdownGaugeP
           clipPath: "polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%)",
         }}
       />
-      {/* Text overlay */}
       <div className="absolute inset-0 flex items-center justify-center gap-2 text-xs font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
         {locked ? (
           <span>{COPY.oracle.locked}</span>
         ) : (
           <>
-            <span>{SLOT_LABEL[slot]}</span>
+            <span>{timeRange}</span>
             <span>-</span>
             <span>{remaining} remaining</span>
           </>
