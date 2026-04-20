@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import {
   PublicKey,
   SystemProgram,
@@ -21,6 +22,7 @@ interface SolDepositSheetProps {
 export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
   const { publicKey, sendTransaction, connected } = useWallet();
   const { connection } = useConnection();
+  const modal = useWalletModal();
   const [solAmount, setSolAmount] = useState("0.1");
   const [solPrice, setSolPrice] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
@@ -28,6 +30,7 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!open) return;
     fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd")
       .then((r) => r.json())
       .then((d: { solana?: { usd?: number } }) => {
@@ -59,7 +62,6 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
       const signature = await sendTransaction(tx, connection);
       await connection.confirmTransaction(signature, "confirmed");
 
-      // Register the deposit intent on our server.
       await fetch("/api/sol/deposit", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -88,7 +90,26 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
           Send SOL from your wallet. Your balance updates in seconds.
         </SheetDescription>
 
-        {status === "sent" ? (
+        {/* Step 1: Connect wallet if not connected */}
+        {!connected ? (
+          <div className="flex flex-col items-center gap-5 py-8">
+            <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-8 w-8 text-accent-glow">
+                <rect x="2" y="6" width="20" height="12" rx="2" />
+                <path d="M22 10h-4a2 2 0 100 4h4" />
+              </svg>
+            </div>
+            <p className="text-sm text-text-secondary text-center">
+              Connect your Solana wallet first
+            </p>
+            <Button size="lg" onClick={() => modal.setVisible(true)}>
+              Connect wallet
+            </Button>
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+          </div>
+        ) : status === "sent" ? (
           <div className="flex flex-col items-center gap-4 py-6">
             <div className="h-16 w-16 rounded-full bg-yes/20 flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="h-8 w-8 text-yes">
@@ -105,6 +126,9 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
           </div>
         ) : (
           <>
+            <p className="mb-3 text-xs text-text-muted">
+              Wallet: {publicKey?.toBase58().slice(0, 8)}...{publicKey?.toBase58().slice(-4)}
+            </p>
             <div className="space-y-3">
               <div>
                 <label htmlFor="sol-amount" className="text-xs text-text-muted mb-1 block">
@@ -145,7 +169,7 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
             <div className="mt-5 flex flex-col gap-2">
               <Button
                 onClick={handleSend}
-                disabled={sending || !connected || sol <= 0}
+                disabled={sending || sol <= 0}
                 size="lg"
               >
                 {sending ? "Sending..." : `Send ${solAmount} SOL`}
