@@ -54,7 +54,7 @@ export function SettingsForm({
   return (
     <div className="flex flex-col gap-5">
       <Card>
-        <h3 className="mb-3 font-display text-sm uppercase tracking-widest text-text-muted">
+        <h3 className="mb-3 font-sans text-xs uppercase tracking-widest text-text-muted">
           {COPY.profile.settings.identity}
         </h3>
         <label className="mb-1 block text-xs text-text-muted">
@@ -74,7 +74,7 @@ export function SettingsForm({
       </Card>
 
       <Card>
-        <h3 className="mb-3 font-display text-sm uppercase tracking-widest text-text-muted">
+        <h3 className="mb-3 font-sans text-xs uppercase tracking-widest text-text-muted">
           {COPY.profile.settings.account}
         </h3>
         <p className="text-xs text-text-muted">{COPY.profile.settings.email}</p>
@@ -87,7 +87,7 @@ export function SettingsForm({
       </Card>
 
       <Card>
-        <h3 className="mb-3 font-display text-sm uppercase tracking-widest text-text-muted">
+        <h3 className="mb-3 font-sans text-xs uppercase tracking-widest text-text-muted">
           {COPY.profile.settings.balance}
         </h3>
         <p className="text-xs text-text-muted">
@@ -102,7 +102,7 @@ export function SettingsForm({
       </Card>
 
       <Card>
-        <h3 className="mb-3 font-display text-sm uppercase tracking-widest text-text-muted">
+        <h3 className="mb-3 font-sans text-xs uppercase tracking-widest text-text-muted">
           {COPY.profile.settings.notifications}
         </h3>
         <div className="flex items-center justify-between py-2">
@@ -136,7 +136,7 @@ export function SettingsForm({
       </Card>
 
       <Card>
-        <h3 className="mb-2 font-display text-sm uppercase tracking-widest text-text-muted">
+        <h3 className="mb-2 font-sans text-xs uppercase tracking-widest text-text-muted">
           {COPY.profile.settings.legal}
         </h3>
         <a
@@ -165,7 +165,7 @@ export function SettingsForm({
       </Button>
 
       <Card className="border-no/40">
-        <h3 className="mb-2 font-display text-sm uppercase tracking-widest text-no-glow">
+        <h3 className="mb-2 font-sans text-xs uppercase tracking-widest text-no-glow">
           {COPY.profile.settings.dangerZone}
         </h3>
         <Button variant="destructive" onClick={onCloseAccount}>

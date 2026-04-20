@@ -112,7 +112,7 @@ function Section({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="font-display text-sm uppercase tracking-widest text-text-muted">
+      <h3 className="font-sans text-xs uppercase tracking-widest text-text-muted">
         {title}
       </h3>
       <div className="flex flex-col gap-2">{children}</div>
@@ -132,7 +132,7 @@ function HistoryItem({
   return (
     <Card className="border-border">
       <div className="flex items-center gap-2 text-xs text-text-muted">
-        <span className="font-display text-[10px] tracking-widest text-accent">{slotLabel(entry.slot)}</span>
+        <span className="font-sans text-[10px] tracking-widest text-accent">{slotLabel(entry.slot)}</span>
         <span className="font-mono">{entry.assetKey}</span>
         <span>&middot;</span>
         <span>{formatRelative(entry.createdAt)}</span>

@@ -34,11 +34,11 @@ export function ProphecySealed({ visible, side }: ProphecySealedProps) {
             <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-accent bg-surface shadow-2xl shadow-accent/50 border-glow-accent">
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-accent-glow to-accent" />
             </div>
-            <h2 className="font-display text-xl uppercase tracking-[0.2em] text-accent-glow text-glow-accent">
+            <h2 className="font-display text-xl tracking-[0.2em] text-accent-glow text-glow-accent">
               {COPY.oracle.sealed}
             </h2>
             <div
-              className={`rounded-lg border ${borderColor} px-6 py-2 font-display text-2xl tracking-[0.15em] ${color}`}
+              className={`rounded-lg border ${borderColor} px-6 py-2 font-sans text-2xl font-bold tracking-[0.15em] ${color}`}
             >
               {side === "yes" ? COPY.bet.yes : COPY.bet.no}
             </div>

@@ -112,7 +112,7 @@ export function RevealAnimation(props: RevealAnimationProps) {
               y: step >= 5 ? 0 : 20,
             }}
             transition={{ duration: 0.4 }}
-            className="mt-4 font-display text-3xl uppercase tracking-widest text-accent-glow"
+            className="mt-4 font-display text-3xl tracking-widest text-accent-glow"
           >
             {COPY.reveal.heading}
           </motion.h2>
@@ -124,7 +124,7 @@ export function RevealAnimation(props: RevealAnimationProps) {
               opacity: step >= 7 ? 1 : 0,
             }}
             transition={{ type: "spring", damping: 18, stiffness: 220 }}
-            className={`mt-5 rounded-2xl border px-6 py-3 ${sideBg} ${sideColor} font-display text-2xl`}
+            className={`mt-5 rounded-2xl border px-6 py-3 ${sideBg} ${sideColor} font-sans text-2xl font-bold`}
           >
             {isYes ? COPY.reveal.yesWon : COPY.reveal.noWon}
           </motion.div>

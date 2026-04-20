@@ -45,16 +45,16 @@ export function ProphecyCard({
       <div className="rounded-2xl border border-accent-dim/30 bg-surface/90 backdrop-blur-md px-4 py-3 border-glow-accent">
         {/* Ticker + total volume on same line */}
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-lg font-bold text-text-primary tracking-wide">
+          <span className="font-sans text-lg font-bold text-text-primary tracking-wide">
             {market.asset.asset_key}
           </span>
-          <span className="text-lg font-bold text-gold-glow text-glow-gold">
+          <span className="font-sans text-lg font-bold text-gold-glow text-glow-gold">
             {formatUsdCompact(pools.totalVolume)}
           </span>
         </div>
 
-        {/* Question */}
-        <h2 className="mb-3 font-display text-xl leading-snug text-text-primary sm:text-2xl">
+        {/* Question — Jacquard, lowercase, first letter capitalized */}
+        <h2 className="mb-3 font-display text-xl leading-snug text-text-primary sm:text-2xl lowercase first-letter:uppercase">
           {market.question}
         </h2>
 

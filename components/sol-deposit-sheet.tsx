@@ -81,7 +81,7 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
-        <SheetTitle className="mb-1 font-display text-xl text-accent-glow">
+        <SheetTitle className="mb-1 font-sans text-xl font-bold text-accent-glow">
           Deposit SOL
         </SheetTitle>
         <SheetDescription className="mb-4 text-sm text-text-secondary">

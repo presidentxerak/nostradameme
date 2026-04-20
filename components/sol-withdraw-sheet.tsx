@@ -68,7 +68,7 @@ export function SolWithdrawSheet({ open, onOpenChange, balance }: SolWithdrawShe
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent>
-        <SheetTitle className="mb-1 font-display text-xl text-accent-glow">
+        <SheetTitle className="mb-1 font-sans text-xl font-bold text-accent-glow">
           Withdraw SOL
         </SheetTitle>
         <SheetDescription className="mb-4 text-sm text-text-secondary">

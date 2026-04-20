@@ -27,7 +27,7 @@ export function YesNoButtons({
         style={{ height: 60, background: "linear-gradient(135deg, #00cc9e 0%, #00d4ff 100%)" }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent bg-shimmer-size animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
-        <span className="relative text-xl font-bold tracking-[0.2em] text-glow-yes">
+        <span className="relative font-sans text-xl font-bold tracking-[0.2em] text-glow-yes">
           {COPY.bet.yes}
         </span>
         {typeof yesPct === "number" && (
@@ -43,7 +43,7 @@ export function YesNoButtons({
         style={{ height: 60, background: "linear-gradient(135deg, #cc004e 0%, #ff2222 100%)" }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent bg-shimmer-size animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
-        <span className="relative text-xl font-bold tracking-[0.2em] text-glow-no">
+        <span className="relative font-sans text-xl font-bold tracking-[0.2em] text-glow-no">
           {COPY.bet.no}
         </span>
         {typeof noPct === "number" && (

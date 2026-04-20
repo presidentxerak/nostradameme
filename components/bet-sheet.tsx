@@ -73,8 +73,8 @@ export function BetSheet({
           <p
             className={
               side === "yes"
-                ? "font-display text-xl text-yes-glow"
-                : "font-display text-xl text-no-glow"
+                ? "font-sans text-xl font-bold text-yes-glow"
+                : "font-sans text-xl font-bold text-no-glow"
             }
           >
             {sideLabel}

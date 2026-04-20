@@ -55,11 +55,11 @@ export function TugOfWar({ pools }: TugOfWarProps) {
         {/* Center marker */}
         <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/20" />
         {/* YES label inside */}
-        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white drop-shadow-md">
+        <span className="absolute left-2 top-1/2 -translate-y-1/2 font-sans text-[10px] font-bold text-white drop-shadow-md">
           {COPY.bet.yes} {yesPct}%
         </span>
         {/* NO label inside */}
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-white drop-shadow-md">
+        <span className="absolute right-2 top-1/2 -translate-y-1/2 font-sans text-[10px] font-bold text-white drop-shadow-md">
           {100 - yesPct}% {COPY.bet.no}
         </span>
       </motion.div>
