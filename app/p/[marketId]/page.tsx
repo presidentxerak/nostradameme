@@ -1,22 +1,10 @@
 import type { Metadata } from "next";
-import { getSessionUser } from "@/lib/auth/session";
-import {
-  getMarketById,
-  getMarketFeed,
-  getMarketPools,
-  getUserPositionForMarket,
-  getOpenMarketsBySlot,
-} from "@/lib/services/markets";
-import { getUserBalance } from "@/lib/services/positions";
-import { getAdminSupabase } from "@/lib/supabase/admin";
-import { resolveUsername } from "@/lib/utils/meme-names";
 import { OraclePageClient, type OraclePageSlotData } from "@/app/oracle-page-client";
-import { buildOgImageUrl, buildShareUrl } from "@/lib/utils/share";
-import type { ProfileRow } from "@/types/db";
-import type { SlotKey } from "@/components/slot-tabs";
 import { COPY } from "@/lib/config/copy";
 
 export const dynamic = "force-dynamic";
+
+type SlotKey = "morning" | "noon" | "night";
 
 interface PageProps {
   params: Promise<{ marketId: string }>;
@@ -26,31 +14,33 @@ interface PageProps {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { marketId } = await params;
-  const market = await getMarketById(marketId);
-  const title = market
-    ? `${market.question} — ${COPY.app.name}`
-    : COPY.app.name;
-  const description = market?.oracle_quote ?? COPY.app.tagline;
-  const ogUrl = buildOgImageUrl({ marketId });
-  const shareUrl = buildShareUrl(marketId);
-  return {
-    title,
-    description,
-    openGraph: {
+  try {
+    const { marketId } = await params;
+    const { getMarketById } = await import("@/lib/services/markets");
+    const { buildOgImageUrl, buildShareUrl } = await import("@/lib/utils/share");
+    const market = await getMarketById(marketId);
+    const title = market
+      ? `${market.question} — ${COPY.app.name}`
+      : COPY.app.name;
+    const description = market?.oracle_quote ?? COPY.app.tagline;
+    const ogUrl = buildOgImageUrl({ marketId });
+    const shareUrl = buildShareUrl(marketId);
+    return {
       title,
       description,
-      url: shareUrl,
-      images: [{ url: ogUrl, width: 640, height: 480 }],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [ogUrl],
-    },
-  };
+      openGraph: { title, description, url: shareUrl, images: [{ url: ogUrl, width: 640, height: 480 }] },
+      twitter: { card: "summary_large_image", title, description, images: [ogUrl] },
+    };
+  } catch {
+    return { title: COPY.app.name, description: COPY.app.tagline };
+  }
 }
+
+const EMPTY_SLOTS: OraclePageSlotData[] = [
+  { slot: "morning", market: null, pools: null, feed: [], userHasPosition: false, userPositionSide: null, userPositionAmount: null },
+  { slot: "noon", market: null, pools: null, feed: [], userHasPosition: false, userPositionSide: null, userPositionAmount: null },
+  { slot: "night", market: null, pools: null, feed: [], userHasPosition: false, userPositionSide: null, userPositionAmount: null },
+];
 
 export default async function PublicMarketPage({
   params,
@@ -60,66 +50,56 @@ export default async function PublicMarketPage({
   const search = await searchParams;
   const refParam = search.ref;
   const ref = Array.isArray(refParam) ? refParam[0] : refParam;
-  const user = await getSessionUser();
-  const [market, slotsMap] = await Promise.all([
-    getMarketById(marketId),
-    getOpenMarketsBySlot(),
-  ]);
 
+  let user: { id: string; email: string | null } | null = null;
+  let slotData: OraclePageSlotData[] = EMPTY_SLOTS;
   let balance = 0;
   let username = "anon_oracle";
-  if (user) {
-    balance = await getUserBalance(user.id);
-    const admin = getAdminSupabase();
-    const { data } = await admin
-      .from("profiles")
-      .select("username")
-      .eq("id", user.id)
-      .maybeSingle();
-    username = resolveUsername(
-      user.id,
-      (data as Pick<ProfileRow, "username"> | null)?.username ?? null,
-    );
-  }
 
-  // Build slots: the targeted market replaces its slot if present,
-  // otherwise inject it under its own slot.
-  const slotKeys: SlotKey[] = ["morning", "noon", "night"];
-  const slotData: OraclePageSlotData[] = await Promise.all(
-    slotKeys.map(async (slot) => {
-      const useMarket =
-        market && market.slot === slot
-          ? market
-          : slotsMap[slot];
-      if (!useMarket) {
+  try {
+    const { getSessionUser } = await import("@/lib/auth/session");
+    const { getMarketById, getMarketFeed, getMarketPools, getOpenMarketsBySlot, getUserPositionForMarket } = await import("@/lib/services/markets");
+    const { getUserBalance } = await import("@/lib/services/positions");
+    const { getAdminSupabase } = await import("@/lib/supabase/admin");
+    const { resolveUsername } = await import("@/lib/utils/meme-names");
+
+    try { user = await getSessionUser(); } catch { /* */ }
+
+    const [market, slotsMap] = await Promise.all([
+      getMarketById(marketId),
+      getOpenMarketsBySlot(),
+    ]);
+
+    const slotKeys: SlotKey[] = ["morning", "noon", "night"];
+    slotData = await Promise.all(
+      slotKeys.map(async (slot) => {
+        const useMarket = (market && market.slot === slot) ? market : slotsMap[slot];
+        if (!useMarket) {
+          return { slot, market: null, pools: null, feed: [], userHasPosition: false, userPositionSide: null, userPositionAmount: null };
+        }
+        const [pools, feed, pos] = await Promise.all([
+          getMarketPools(useMarket.id),
+          getMarketFeed(useMarket.id),
+          user ? getUserPositionForMarket(user.id, useMarket.id) : Promise.resolve(null),
+        ]);
         return {
-          slot,
-          market: null,
-          pools: null,
-          feed: [],
-          userHasPosition: false,
-          userPositionSide: null,
-          userPositionAmount: null,
+          slot, market: useMarket, pools, feed,
+          userHasPosition: !!pos,
+          userPositionSide: pos?.side ?? null,
+          userPositionAmount: pos ? Number(pos.amount) : null,
         };
-      }
-      const [pools, feed, pos] = await Promise.all([
-        getMarketPools(useMarket.id),
-        getMarketFeed(useMarket.id),
-        user
-          ? getUserPositionForMarket(user.id, useMarket.id)
-          : Promise.resolve(null),
-      ]);
-      return {
-        slot,
-        market: useMarket,
-        pools,
-        feed,
-        userHasPosition: !!pos,
-        userPositionSide: pos?.side ?? null,
-        userPositionAmount: pos ? Number(pos.amount) : null,
-      };
-    }),
-  );
+      }),
+    );
+
+    if (user) {
+      balance = await getUserBalance(user.id);
+      const admin = getAdminSupabase();
+      const { data } = await admin.from("profiles").select("username").eq("id", user.id).maybeSingle();
+      username = resolveUsername(user.id, (data as { username: string | null } | null)?.username ?? null);
+    }
+  } catch {
+    // DB unavailable
+  }
 
   return (
     <OraclePageClient

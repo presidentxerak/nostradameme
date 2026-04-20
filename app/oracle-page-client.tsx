@@ -12,7 +12,6 @@ import { RevealAnimation } from "@/components/reveal-animation";
 import { SolDepositSheet } from "@/components/sol-deposit-sheet";
 import { BottomNav } from "@/components/bottom-nav";
 import { AuthButton } from "@/components/auth-button";
-import { BalanceDisplay } from "@/components/balance-display";
 import { COPY } from "@/lib/config/copy";
 import { useMarketPools } from "@/lib/hooks/use-market-pools";
 import { useBalance } from "@/lib/hooks/use-balance";
