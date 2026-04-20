@@ -51,11 +51,13 @@ export default function RootLayout({
       lang="en"
       className={`dark ${jacquard.variable} ${silkscreen.variable}`}
     >
-      <body className="min-h-screen bg-background font-sans text-text-primary antialiased">
-        <Providers>
-          <SolanaProvider>{children}</SolanaProvider>
-        </Providers>
-        <ServiceWorkerRegister />
+      <body className="min-h-screen font-sans text-text-primary antialiased">
+        <div className="relative z-10">
+          <Providers>
+            <SolanaProvider>{children}</SolanaProvider>
+          </Providers>
+          <ServiceWorkerRegister />
+        </div>
       </body>
     </html>
   );

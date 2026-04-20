@@ -13,10 +13,19 @@ const EMPTY_SLOTS: OraclePageSlotData[] = [
 
 async function ensureActiveMarket() {
   try {
+    // First resolve any expired markets so they don't block the view.
+    const { resolveDueMarkets, lockMarketsApproachingEnd } = await import("@/lib/markets/lifecycle");
+    await lockMarketsApproachingEnd();
+    await resolveDueMarkets();
+  } catch {
+    // resolve failed — continue anyway
+  }
+  try {
+    // Then create a new market for the current hour if none exists.
     const { generateHourlyMarket } = await import("@/lib/markets/generator");
     await generateHourlyMarket("auto");
   } catch {
-    // Already exists or CoinGecko unavailable — that's fine.
+    // Already exists or CoinGecko unavailable.
   }
 }
 
