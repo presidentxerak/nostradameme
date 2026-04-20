@@ -11,6 +11,15 @@ const EMPTY_SLOTS: OraclePageSlotData[] = [
   { slot: "night", market: null, pools: null, feed: [], userHasPosition: false, userPositionSide: null, userPositionAmount: null },
 ];
 
+async function ensureActiveMarket() {
+  try {
+    const { generateHourlyMarket } = await import("@/lib/markets/generator");
+    await generateHourlyMarket("auto");
+  } catch {
+    // Already exists or CoinGecko unavailable — that's fine.
+  }
+}
+
 async function loadData() {
   let user: { id: string; email: string | null } | null = null;
   let slotData: OraclePageSlotData[] = EMPTY_SLOTS;
@@ -34,6 +43,9 @@ async function loadData() {
     } catch {
       // auth unavailable
     }
+
+    // Ensure there's always an active market.
+    await ensureActiveMarket();
 
     try {
       const slots = await getOpenMarketsBySlot();
