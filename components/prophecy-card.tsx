@@ -51,7 +51,7 @@ export function ProphecyCard({
           </span>
         </div>
 
-        <h2 className="mb-3 font-display text-xl leading-snug text-text-primary sm:text-2xl lowercase first-letter:uppercase">
+        <h2 className="mb-3 font-sans text-lg font-bold leading-snug text-text-primary sm:text-xl">
           {market.question}
         </h2>
 
