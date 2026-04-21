@@ -6,7 +6,6 @@ import { TugOfWar } from "@/components/tug-of-war";
 import { YesNoButtons } from "@/components/yes-no-buttons";
 import { CountdownGauge } from "@/components/countdown-gauge";
 import { msUntil } from "@/lib/utils/dates";
-import { formatUsdCompact } from "@/lib/utils/currency";
 import type { MarketWithAsset, MarketPools } from "@/types/app";
 
 interface ProphecyCardProps {
@@ -42,15 +41,6 @@ export function ProphecyCard({
       transition={{ duration: 0.3 }}
     >
       <div className="rounded-2xl border border-accent-dim/30 bg-surface/90 backdrop-blur-md px-4 py-3 border-glow-accent">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="font-sans text-lg font-bold text-text-primary tracking-wide">
-            {market.asset.asset_key}
-          </span>
-          <span className="font-sans text-lg font-bold text-gold-glow text-glow-gold">
-            {formatUsdCompact(pools.totalVolume)}
-          </span>
-        </div>
-
         <h2 className="mb-3 font-sans text-lg font-bold leading-snug text-text-primary sm:text-xl">
           {market.question}
         </h2>
@@ -58,6 +48,7 @@ export function ProphecyCard({
         <CountdownGauge
           startAt={market.start_at}
           endAt={market.end_at}
+          totalVolume={pools.totalVolume}
         />
 
         <div className="mt-1.5">

@@ -34,7 +34,7 @@ export function TugOfWar({ pools }: TugOfWarProps) {
       <motion.div
         animate={controls}
         className="relative w-full overflow-hidden rounded-full"
-        style={{ height: 26 }}
+        style={{ height: 36 }}
       >
         {/* YES fill */}
         <div

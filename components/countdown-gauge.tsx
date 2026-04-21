@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { formatRemaining } from "@/lib/utils/dates";
+import { formatUsdCompact } from "@/lib/utils/currency";
 
 interface CountdownGaugeProps {
   startAt: string;
   endAt: string;
+  totalVolume?: number;
 }
 
 function formatTimeRange(startAt: string, endAt: string): string {
@@ -20,7 +22,7 @@ function formatTimeRange(startAt: string, endAt: string): string {
   return `${fmtH(s)} → ${fmtH(e)} UTC`;
 }
 
-export function CountdownGauge({ startAt, endAt }: CountdownGaugeProps) {
+export function CountdownGauge({ startAt, endAt, totalVolume }: CountdownGaugeProps) {
   const [remaining, setRemaining] = useState(() => formatRemaining(endAt));
   const [pct, setPct] = useState(100);
 
@@ -42,7 +44,7 @@ export function CountdownGauge({ startAt, endAt }: CountdownGaugeProps) {
   const timeRange = formatTimeRange(startAt, endAt);
 
   return (
-    <div className="relative w-full overflow-hidden" style={{ height: 26 }}>
+    <div className="relative w-full overflow-hidden" style={{ height: 36 }}>
       <div
         className="absolute inset-0 bg-background/60"
         style={{
@@ -57,10 +59,11 @@ export function CountdownGauge({ startAt, endAt }: CountdownGaugeProps) {
           clipPath: "polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%)",
         }}
       />
-      <div className="absolute inset-0 flex items-center justify-center gap-2 text-xs font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-        <span>{timeRange}</span>
-        <span>-</span>
-        <span>{remaining} remaining</span>
+      <div className="absolute inset-0 flex items-center justify-between px-3 text-xs font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+        <span>{timeRange} - {remaining} remaining</span>
+        {typeof totalVolume === "number" && (
+          <span className="text-gold-glow text-glow-gold">{formatUsdCompact(totalVolume)}</span>
+        )}
       </div>
     </div>
   );
