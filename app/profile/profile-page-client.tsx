@@ -7,7 +7,7 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { usePrivyAvailable } from "@/app/providers";
 import { OracleIdentityCard } from "@/components/oracle-identity-card";
 import { SettingsForm, type SettingsFormValues } from "@/components/settings-form";
-import { SolDepositSheet } from "@/components/sol-deposit-sheet";
+import { DepositChooser } from "@/components/deposit-chooser";
 import { SolWithdrawSheet } from "@/components/sol-withdraw-sheet";
 import { BottomNav } from "@/components/bottom-nav";
 import { AuthButton } from "@/components/auth-button";
@@ -76,6 +76,7 @@ function PrivyProfileContent(props: ProfilePageClientProps) {
   const { authenticated, ready, user, logout, getAccessToken } = usePrivy();
   const [tab, setTab] = useState<Tab>("wallet");
   const [depositOpen, setDepositOpen] = useState(false);
+  const [depositMode, setDepositMode] = useState<"sol" | "xrp" | null>(null);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   if (!ready) {
@@ -163,7 +164,7 @@ function PrivyProfileContent(props: ProfilePageClientProps) {
         />
       )}
 
-      <SolDepositSheet open={depositOpen} onOpenChange={setDepositOpen} />
+      <DepositChooser open={depositOpen} onOpenChange={setDepositOpen} mode={depositMode} onModeChange={setDepositMode} />
       <SolWithdrawSheet open={withdrawOpen} onOpenChange={setWithdrawOpen} balance={props.balance} />
     </>
   );
