@@ -14,22 +14,6 @@
     min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
   }
-  body {
-    background-color: #06060c;
-    background-image: url("/background.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-  }
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 0;
-    pointer-events: none;
-  }
 }
 
 @layer utilities {
@@ -51,17 +35,17 @@
   .text-glow-gold {
     text-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
   }
-  .border-glow-yes {
-    box-shadow: 0 0 16px rgba(0, 255, 200, 0.35), inset 0 0 16px rgba(0, 255, 200, 0.08);
-  }
-  .border-glow-no {
-    box-shadow: 0 0 16px rgba(255, 0, 98, 0.35), inset 0 0 16px rgba(255, 0, 98, 0.08);
-  }
   .capitalize-first {
     text-transform: lowercase;
   }
   .capitalize-first::first-letter {
     text-transform: uppercase;
+  }
+  .border-glow-yes {
+    box-shadow: 0 0 16px rgba(0, 255, 200, 0.35), inset 0 0 16px rgba(0, 255, 200, 0.08);
+  }
+  .border-glow-no {
+    box-shadow: 0 0 16px rgba(255, 0, 98, 0.35), inset 0 0 16px rgba(255, 0, 98, 0.08);
   }
   .border-glow-accent {
     box-shadow: 0 0 15px rgba(139, 92, 246, 0.2), inset 0 0 15px rgba(139, 92, 246, 0.05);

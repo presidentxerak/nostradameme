@@ -52,6 +52,15 @@ export default function RootLayout({
       className={`dark ${jacquard.variable} ${silkscreen.variable}`}
     >
       <body className="min-h-screen font-sans text-text-primary antialiased">
+        {/* Fixed background image + dark overlay */}
+        <div className="fixed inset-0 z-0">
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: "url(/background.png)" }}
+          />
+          <div className="absolute inset-0 bg-black/70" />
+        </div>
+        {/* App content above the background */}
         <div className="relative z-10">
           <Providers>
             <SolanaProvider>{children}</SolanaProvider>
