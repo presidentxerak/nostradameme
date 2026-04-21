@@ -150,7 +150,7 @@ export function OraclePageClient(props: OraclePageClientProps) {
   }, [userWon, pools, userPositionSide, userPositionAmount, resolution]);
 
   return (
-    <div className="relative flex h-[100dvh] flex-col bg-background overflow-hidden">
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden">
       {/* Top bar: logo + balance + auth */}
       <header className="z-40 flex items-center justify-between px-4 py-2 border-b border-border/20">
         <span className="font-display text-2xl sm:text-3xl text-accent-glow text-glow-accent">
