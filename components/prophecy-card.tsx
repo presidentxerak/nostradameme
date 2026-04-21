@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { TugOfWar } from "@/components/tug-of-war";
 import { YesNoButtons } from "@/components/yes-no-buttons";
@@ -13,6 +13,7 @@ interface ProphecyCardProps {
   market: MarketWithAsset;
   pools: MarketPools;
   onBet: (side: "yes" | "no") => void;
+  onExpired?: () => void;
   disabled?: boolean;
 }
 
@@ -20,6 +21,7 @@ export function ProphecyCard({
   market,
   pools,
   onBet,
+  onExpired,
   disabled = false,
 }: ProphecyCardProps) {
   const bettingEnd = market.betting_end_at ?? market.end_at;
@@ -36,6 +38,10 @@ export function ProphecyCard({
   const durationLabel = market.duration
     ? DURATION_LABELS[market.duration as keyof typeof DURATION_LABELS] ?? market.duration
     : null;
+
+  const handleExpired = useCallback(() => {
+    onExpired?.();
+  }, [onExpired]);
 
   return (
     <motion.div
@@ -63,6 +69,7 @@ export function ProphecyCard({
           endAt={bettingEnd}
           totalVolume={pools.totalVolume}
           label="Betting closes"
+          onExpired={handleExpired}
         />
 
         <div className="mt-1.5">

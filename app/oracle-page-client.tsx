@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import { OracleVideo } from "@/components/oracle-video";
 import { ProphecyCard } from "@/components/prophecy-card";
@@ -77,6 +78,11 @@ export function OraclePageClient(props: OraclePageClientProps) {
     current?.userPositionSide ?? null,
   );
   const getToken = useGetToken();
+  const router = useRouter();
+
+  const handleBettingExpired = useCallback(() => {
+    setTimeout(() => router.refresh(), 2000);
+  }, [router]);
   const [userPositionAmount, setUserPositionAmount] = useState<number>(
     current?.userPositionAmount ?? 0,
   );
@@ -215,13 +221,13 @@ export function OraclePageClient(props: OraclePageClientProps) {
                   market={market}
                   pools={pools}
                   onBet={handleBet}
+                  onExpired={handleBettingExpired}
                 />
               ) : (
                 <div className="rounded-2xl border border-border/40 bg-surface/90 backdrop-blur-md p-6 text-center space-y-3">
                   <p className="text-lg text-text-secondary font-bold">{COPY.oracle.silent}</p>
                   <p className="text-sm text-text-muted">
-                    Next prophecy at 9:00 AM, 12:00 PM, or midnight.
-                    Enable notifications to never miss one.
+                    Next prophecy opens in a few minutes.
                   </p>
                   <Link href="/rules" className="inline-block text-sm text-accent-glow hover:underline">
                     How does it work?

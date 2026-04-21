@@ -10,7 +10,7 @@ import { hourToSlotName } from "@/lib/utils/dates";
 import type { MarketSlot, SupportedAssetRow } from "@/types/db";
 import type { GeneratedMarket } from "@/lib/markets/types";
 
-const BETTING_WINDOW_MS = 20 * 60 * 1000;
+const BETTING_WINDOW_MS = 5 * 60 * 1000;
 
 export type Duration = "24h" | "7d" | "1m" | "3m" | "6m" | "1y";
 

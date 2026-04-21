@@ -9,11 +9,13 @@ interface CountdownGaugeProps {
   endAt: string;
   totalVolume?: number;
   label?: string;
+  onExpired?: () => void;
 }
 
-export function CountdownGauge({ startAt, endAt, totalVolume, label }: CountdownGaugeProps) {
+export function CountdownGauge({ startAt, endAt, totalVolume, label, onExpired }: CountdownGaugeProps) {
   const [remaining, setRemaining] = useState(() => formatRemaining(endAt));
-  const [pct, setPct] = useState(100);
+  const [pct, setPct] = useState(0);
+  const [expired, setExpired] = useState(false);
 
   useEffect(() => {
     const update = () => {
@@ -21,14 +23,19 @@ export function CountdownGauge({ startAt, endAt, totalVolume, label }: Countdown
       const start = new Date(startAt).getTime();
       const end = new Date(endAt).getTime();
       const total = end - start;
+      const elapsed = now - start;
       const left = end - now;
       setRemaining(left <= 0 ? "Closed" : formatRemaining(endAt, now));
-      setPct(total > 0 ? Math.max(0, Math.min(100, (left / total) * 100)) : 0);
+      setPct(total > 0 ? Math.max(0, Math.min(100, (elapsed / total) * 100)) : 100);
+      if (left <= 0 && !expired) {
+        setExpired(true);
+        onExpired?.();
+      }
     };
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [startAt, endAt]);
+  }, [startAt, endAt, expired, onExpired]);
 
   const prefix = label ? `${label}: ` : "";
 
