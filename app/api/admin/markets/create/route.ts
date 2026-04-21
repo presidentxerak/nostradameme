@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     if (!parsed.success) {
       throw new AppError("bad_request", parsed.error.message, 400);
     }
-    const result = await generateMarketForSlot(parsed.data.slot, "admin");
+    const result = await generateMarketForSlot(parsed.data.slot);
     await logAdminAction({
       adminId: admin.id,
       action: "create_market",

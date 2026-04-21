@@ -38,8 +38,8 @@ export function msUntil(endIso: string, now = Date.now()): number {
   return Math.max(0, new Date(endIso).getTime() - now);
 }
 
-export function isLocked(endIso: string, lockBeforeMs = 5 * MINUTE): boolean {
-  return msUntil(endIso) <= lockBeforeMs;
+export function isLocked(bettingEndIso: string): boolean {
+  return msUntil(bettingEndIso) <= 0;
 }
 
 export function hourlySlotStart(date = new Date()): Date {

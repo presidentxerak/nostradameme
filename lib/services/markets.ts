@@ -15,12 +15,11 @@ export async function getOpenMarketsBySlot(): Promise<
 > {
   const admin = getAdminSupabase();
   const now = new Date().toISOString();
-  // Only get markets that are open AND haven't expired yet.
   const { data } = await admin
     .from("markets")
     .select("*, asset:supported_assets!markets_asset_id_fkey(*)")
     .eq("status", "open")
-    .gt("end_at", now)
+    .gt("betting_end_at", now)
     .order("start_at", { ascending: false })
     .limit(5);
   const rows = (data ?? []) as Array<MarketRow & { asset: SupportedAssetRow }>;

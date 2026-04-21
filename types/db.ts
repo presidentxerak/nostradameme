@@ -104,7 +104,9 @@ export interface MarketRow {
   resolution_side: MarketSide | null;
   status: MarketStatus;
   start_at: string;
+  betting_end_at: string;
   end_at: string;
+  duration: string | null;
   source_snapshot: Record<string, unknown>;
   created_at: string;
   updated_at: string;

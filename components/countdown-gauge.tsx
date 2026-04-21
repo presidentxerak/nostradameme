@@ -8,21 +8,10 @@ interface CountdownGaugeProps {
   startAt: string;
   endAt: string;
   totalVolume?: number;
+  label?: string;
 }
 
-function formatTimeRange(startAt: string, endAt: string): string {
-  const s = new Date(startAt);
-  const e = new Date(endAt);
-  const fmtH = (d: Date) => {
-    const h = d.getUTCHours();
-    const suffix = h >= 12 ? "PM" : "AM";
-    const display = h === 0 ? 12 : h > 12 ? h - 12 : h;
-    return `${display}${suffix}`;
-  };
-  return `${fmtH(s)} → ${fmtH(e)} UTC`;
-}
-
-export function CountdownGauge({ startAt, endAt, totalVolume }: CountdownGaugeProps) {
+export function CountdownGauge({ startAt, endAt, totalVolume, label }: CountdownGaugeProps) {
   const [remaining, setRemaining] = useState(() => formatRemaining(endAt));
   const [pct, setPct] = useState(100);
 
@@ -33,7 +22,7 @@ export function CountdownGauge({ startAt, endAt, totalVolume }: CountdownGaugePr
       const end = new Date(endAt).getTime();
       const total = end - start;
       const left = end - now;
-      setRemaining(left <= 0 ? "0s" : formatRemaining(endAt, now));
+      setRemaining(left <= 0 ? "Closed" : formatRemaining(endAt, now));
       setPct(total > 0 ? Math.max(0, Math.min(100, (left / total) * 100)) : 0);
     };
     update();
@@ -41,7 +30,7 @@ export function CountdownGauge({ startAt, endAt, totalVolume }: CountdownGaugePr
     return () => clearInterval(interval);
   }, [startAt, endAt]);
 
-  const timeRange = formatTimeRange(startAt, endAt);
+  const prefix = label ? `${label}: ` : "";
 
   return (
     <div className="relative w-full overflow-hidden" style={{ height: 36 }}>
@@ -60,7 +49,7 @@ export function CountdownGauge({ startAt, endAt, totalVolume }: CountdownGaugePr
         }}
       />
       <div className="absolute inset-0 flex items-center justify-between px-3 text-xs font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-        <span>{timeRange} - {remaining} remaining</span>
+        <span>{prefix}{remaining}</span>
         {typeof totalVolume === "number" && (
           <span className="text-gold-glow text-glow-gold">{formatUsdCompact(totalVolume)}</span>
         )}

@@ -1,27 +1,31 @@
 import type { MarketSlot } from "@/types/db";
 import type { Operator } from "@/lib/markets/types";
+import type { Duration } from "@/lib/markets/generator";
 
 function formatAmount(n: number): string {
   if (n >= 1000) return `$${n.toLocaleString("en-US")}`;
   return `$${n.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 }
 
-function formatHour(endAt: Date): string {
-  const h = endAt.getUTCHours();
-  const suffix = h >= 12 ? "PM" : "AM";
-  const display = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return `${display}:00 ${suffix} UTC`;
-}
+const DURATION_TEXT: Record<Duration, string> = {
+  "24h": "in 24 hours",
+  "7d": "in 7 days",
+  "1m": "in 1 month",
+  "3m": "in 3 months",
+  "6m": "in 6 months",
+  "1y": "in 1 year",
+};
 
 export function generateQuestion(
   asset: string,
   _slot: MarketSlot,
   operator: Operator,
   threshold: number,
-  endAt: Date,
+  _endAt: Date,
+  duration: Duration,
 ): string {
   const direction = operator === "gte" ? "above" : "below";
   const amt = formatAmount(threshold);
-  const time = formatHour(endAt);
-  return `Will ${asset} trade ${direction} ${amt} by ${time}?`;
+  const timeframe = DURATION_TEXT[duration];
+  return `Will ${asset} trade ${direction} ${amt} ${timeframe}?`;
 }

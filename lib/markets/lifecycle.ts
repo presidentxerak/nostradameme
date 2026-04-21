@@ -40,7 +40,7 @@ export async function resolveDueMarkets(): Promise<ResolveDueResult> {
 
 export async function lockMarketsApproachingEnd(): Promise<number> {
   const admin = getAdminSupabase();
-  const fiveMinFromNow = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+  const now = new Date().toISOString();
   const { data } = await admin
     .from("markets")
     .update({
@@ -48,7 +48,7 @@ export async function lockMarketsApproachingEnd(): Promise<number> {
       updated_at: new Date().toISOString(),
     })
     .eq("status", "open")
-    .lte("end_at", fiveMinFromNow)
+    .lte("betting_end_at", now)
     .select("id");
   return (data ?? []).length;
 }
@@ -59,7 +59,6 @@ export async function cancelMarket(marketId: string): Promise<void> {
     .from("markets")
     .update({ status: "canceled", updated_at: new Date().toISOString() })
     .eq("id", marketId);
-  // Refund all funded positions.
   const { data: positions } = await admin
     .from("positions")
     .select("*")

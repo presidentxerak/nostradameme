@@ -42,8 +42,9 @@ export async function createPosition(
   if (market.status !== "open") {
     throw new AppError("market_not_open", "Prophecy is not open", 400);
   }
-  if (isLocked(market.end_at)) {
-    throw new AppError("market_locked", "Prophecy is locked", 400);
+  const bettingEnd = (market as MarketRow & { betting_end_at?: string }).betting_end_at ?? market.end_at;
+  if (isLocked(bettingEnd)) {
+    throw new AppError("market_locked", "Betting is closed", 400);
   }
 
   const { data: existing } = await admin
