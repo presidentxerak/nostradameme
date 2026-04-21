@@ -170,6 +170,19 @@ export interface DepositIntentRow {
   updated_at: string;
 }
 
+export interface XrpDepositIntentRow {
+  id: string;
+  user_id: string;
+  xrp_address: string;
+  expected_xrp: number;
+  xrp_price_usd: number;
+  usd_amount: number;
+  tx_hash: string | null;
+  status: DepositStatus;
+  credited_at: string | null;
+  created_at: string;
+}
+
 export interface PayoutRunRow {
   id: string;
   market_id: string;

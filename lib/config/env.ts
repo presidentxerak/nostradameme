@@ -26,6 +26,9 @@ const EnvSchema = z.object({
   XRPL_TREASURY_ADDRESS: z
     .string()
     .default("rTreasuryPlaceholderAddressFake00"),
+  NEXT_PUBLIC_XRPL_TREASURY_ADDRESS: z
+    .string()
+    .default(""),
 
   COINGECKO_API_KEY: z.string().default(""),
   COINGECKO_BASE_URL: urlOrDefault("https://api.coingecko.com/api/v3"),
@@ -75,6 +78,7 @@ const parsed = EnvSchema.safeParse({
   TRANSAK_ENV: process.env.TRANSAK_ENV,
   XRPL_TREASURY_SEED: process.env.XRPL_TREASURY_SEED,
   XRPL_TREASURY_ADDRESS: process.env.XRPL_TREASURY_ADDRESS,
+  NEXT_PUBLIC_XRPL_TREASURY_ADDRESS: process.env.NEXT_PUBLIC_XRPL_TREASURY_ADDRESS ?? process.env.XRPL_TREASURY_ADDRESS,
   COINGECKO_API_KEY: process.env.COINGECKO_API_KEY,
   COINGECKO_BASE_URL: process.env.COINGECKO_BASE_URL,
   APP_MODE: process.env.APP_MODE,
