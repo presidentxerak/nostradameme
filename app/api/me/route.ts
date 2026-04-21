@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { handleApiError, requireUser } from "@/lib/auth/guards";
+import { handleApiError, requirePrivyUser } from "@/lib/auth/guards";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { getUserBalance } from "@/lib/services/positions";
 import { resolveUsername } from "@/lib/utils/meme-names";
@@ -21,9 +21,9 @@ const PatchSchema = z.object({
   notifyOnNewMarket: z.boolean().optional(),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const user = await requireUser();
+    const user = await requirePrivyUser(req);
     const admin = getAdminSupabase();
     const { data } = await admin
       .from("profiles")
@@ -32,18 +32,11 @@ export async function GET() {
       .maybeSingle();
     const profile = data as ProfileRow | null;
     if (!profile) {
-      return NextResponse.json({
-        id: user.id,
-        email: user.email,
-        username: null,
-        balance: 0,
-        profile: null,
-      });
+      return NextResponse.json({ id: user.id, username: null, balance: 0, profile: null });
     }
     const balance = await getUserBalance(user.id);
     return NextResponse.json({
       id: user.id,
-      email: user.email,
       username: resolveUsername(user.id, profile.username),
       balance,
       profile: {
@@ -63,7 +56,7 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    const user = await requireUser();
+    const user = await requirePrivyUser(req);
     const parsed = PatchSchema.safeParse(await req.json());
     if (!parsed.success) {
       throw new AppError("bad_request", parsed.error.message, 400);
@@ -74,24 +67,16 @@ export async function PATCH(req: Request) {
       const cleaned = username.length > 0 ? username : null;
       await admin
         .from("profiles")
-        .update({
-          username: cleaned,
-          updated_at: new Date().toISOString(),
-        })
+        .update({ username: cleaned, updated_at: new Date().toISOString() })
         .eq("id", user.id);
     }
-    if (
-      typeof notifyOnResolution === "boolean" ||
-      typeof notifyOnNewMarket === "boolean"
-    ) {
+    if (typeof notifyOnResolution === "boolean" || typeof notifyOnNewMarket === "boolean") {
       const patch: Record<string, unknown> = {
         user_id: user.id,
         updated_at: new Date().toISOString(),
       };
-      if (typeof notifyOnResolution === "boolean")
-        patch.notify_on_resolution = notifyOnResolution;
-      if (typeof notifyOnNewMarket === "boolean")
-        patch.notify_on_new_market = notifyOnNewMarket;
+      if (typeof notifyOnResolution === "boolean") patch.notify_on_resolution = notifyOnResolution;
+      if (typeof notifyOnNewMarket === "boolean") patch.notify_on_new_market = notifyOnNewMarket;
       await admin.from("user_settings").upsert(patch);
     }
     return NextResponse.json({ ok: true });

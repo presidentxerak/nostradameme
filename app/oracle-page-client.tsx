@@ -17,6 +17,7 @@ import { useMarketPools } from "@/lib/hooks/use-market-pools";
 import { useBalance } from "@/lib/hooks/use-balance";
 import { useMarketResolution } from "@/lib/hooks/use-market-resolution";
 import { useLiveFeed } from "@/lib/hooks/use-live-feed";
+import { useGetToken } from "@/lib/hooks/use-privy-token";
 import { formatUsd } from "@/lib/utils/currency";
 import type { LiveFeedEntry, MarketPools, MarketWithAsset } from "@/types/app";
 import type { MarketSide } from "@/types/db";
@@ -74,6 +75,7 @@ export function OraclePageClient(props: OraclePageClientProps) {
   const [userPositionSide, setUserPositionSide] = useState<MarketSide | null>(
     current?.userPositionSide ?? null,
   );
+  const getToken = useGetToken();
   const [userPositionAmount, setUserPositionAmount] = useState<number>(
     current?.userPositionAmount ?? 0,
   );
@@ -100,9 +102,10 @@ export function OraclePageClient(props: OraclePageClientProps) {
   const handleConfirmBet = useCallback(
     async (amount: number) => {
       if (!current?.market || !betSide) return;
+      const token = await getToken();
       const res = await fetch("/api/positions/create", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({
           marketId: current.market.id,
           side: betSide,

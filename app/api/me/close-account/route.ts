@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { handleApiError, requireUser } from "@/lib/auth/guards";
+import { handleApiError, requirePrivyUser } from "@/lib/auth/guards";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
-    const user = await requireUser();
+    const user = await requirePrivyUser(req);
     const admin = getAdminSupabase();
     // Soft delete: anonymize username, reset display name, keep history.
     await admin

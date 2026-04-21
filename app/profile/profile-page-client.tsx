@@ -73,7 +73,7 @@ function SignInPrompt() {
 }
 
 function PrivyProfileContent(props: ProfilePageClientProps) {
-  const { authenticated, ready, user, logout } = usePrivy();
+  const { authenticated, ready, user, logout, getAccessToken } = usePrivy();
   const [tab, setTab] = useState<Tab>("wallet");
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -94,16 +94,18 @@ function PrivyProfileContent(props: ProfilePageClientProps) {
   };
 
   const handleSaveSettings = async (values: SettingsFormValues) => {
+    const token = await getAccessToken();
     await fetch("/api/me", {
       method: "PATCH",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
       body: JSON.stringify(values),
     });
   };
 
   const handleCloseAccount = async () => {
     if (!window.confirm("Are you sure?")) return;
-    await fetch("/api/me/close-account", { method: "POST" });
+    const token = await getAccessToken();
+    await fetch("/api/me/close-account", { method: "POST", headers: { authorization: `Bearer ${token}` } });
     await logout();
     window.location.href = "/";
   };
