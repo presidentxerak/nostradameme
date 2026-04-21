@@ -11,9 +11,10 @@ interface DepositChooserProps {
   onOpenChange: (open: boolean) => void;
   mode: "sol" | "xrp" | null;
   onModeChange: (mode: "sol" | "xrp" | null) => void;
+  onComplete?: () => void;
 }
 
-export function DepositChooser({ open, onOpenChange, mode, onModeChange }: DepositChooserProps) {
+export function DepositChooser({ open, onOpenChange, mode, onModeChange, onComplete }: DepositChooserProps) {
   if (mode === "sol") {
     return (
       <SolDepositSheet
@@ -22,6 +23,7 @@ export function DepositChooser({ open, onOpenChange, mode, onModeChange }: Depos
           if (!v) onModeChange(null);
           onOpenChange(v);
         }}
+        onComplete={onComplete}
       />
     );
   }
@@ -34,6 +36,7 @@ export function DepositChooser({ open, onOpenChange, mode, onModeChange }: Depos
           if (!v) onModeChange(null);
           onOpenChange(v);
         }}
+        onComplete={onComplete}
       />
     );
   }

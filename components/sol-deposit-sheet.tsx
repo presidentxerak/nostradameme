@@ -18,6 +18,7 @@ import { SOLANA_CONFIG } from "@/lib/solana/config";
 interface SolDepositSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onComplete?: () => void;
 }
 
 const MOBILE_WALLET_LINKS: Record<string, { ios: string; android: string }> = {
@@ -42,7 +43,7 @@ function isInWalletBrowser(): boolean {
   return !!(w.phantom?.solana || w.solflare?.isSolflare);
 }
 
-export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
+export function SolDepositSheet({ open, onOpenChange, onComplete }: SolDepositSheetProps) {
   const { publicKey, sendTransaction, connected, wallets, select, connect } = useWallet();
   const { connection } = useConnection();
   const getToken = useGetToken();
@@ -234,11 +235,17 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
             </div>
             <p className="text-lg font-bold text-yes-glow">SOL sent!</p>
             <p className="text-sm text-text-muted text-center">
-              Your balance will update within 30 seconds.
+              Your balance is ready. You can bet now!
             </p>
-            <Button onClick={() => { setStatus("idle"); onOpenChange(false); }}>
-              Done
-            </Button>
+            {onComplete ? (
+              <Button onClick={() => { setStatus("idle"); onOpenChange(false); onComplete(); }} size="lg">
+                Launch Prediction
+              </Button>
+            ) : (
+              <Button onClick={() => { setStatus("idle"); onOpenChange(false); }}>
+                Done
+              </Button>
+            )}
           </div>
         ) : (
           <>

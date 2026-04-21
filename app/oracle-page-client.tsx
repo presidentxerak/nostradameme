@@ -257,6 +257,9 @@ export function OraclePageClient(props: OraclePageClientProps) {
         onOpenChange={setDepositOpen}
         mode={depositMode}
         onModeChange={setDepositMode}
+        onComplete={() => {
+          if (betSide) setBetOpen(true);
+        }}
       />
       <ProphecySealed visible={sealed !== null} side={sealed} />
 

@@ -9,11 +9,12 @@ import { Input } from "@/components/ui/input";
 interface XrpDepositSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onComplete?: () => void;
 }
 
 const TREASURY_ADDRESS = process.env.NEXT_PUBLIC_XRPL_TREASURY_ADDRESS ?? "";
 
-export function XrpDepositSheet({ open, onOpenChange }: XrpDepositSheetProps) {
+export function XrpDepositSheet({ open, onOpenChange, onComplete }: XrpDepositSheetProps) {
   const getToken = useGetToken();
   const [xrpAmount, setXrpAmount] = useState("10");
   const [xrpAddress, setXrpAddress] = useState("");
@@ -95,13 +96,19 @@ export function XrpDepositSheet({ open, onOpenChange }: XrpDepositSheetProps) {
                 <path d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-lg font-bold text-yes-glow">Deposit registered!</p>
+            <p className="text-lg font-bold text-yes-glow">Funds added!</p>
             <p className="max-w-xs text-center text-sm text-text-muted">
-              Your balance will update automatically once the payment is confirmed on the network. This usually takes under 5 seconds.
+              Your balance is ready. You can bet now!
             </p>
-            <Button onClick={() => { setStatus("idle"); onOpenChange(false); }}>
-              Done
-            </Button>
+            {onComplete ? (
+              <Button onClick={() => { setStatus("idle"); onOpenChange(false); onComplete(); }} size="lg">
+                Launch Prediction
+              </Button>
+            ) : (
+              <Button onClick={() => { setStatus("idle"); onOpenChange(false); }}>
+                Done
+              </Button>
+            )}
           </div>
         ) : (
           <>
