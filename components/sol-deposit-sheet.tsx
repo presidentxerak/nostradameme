@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import type { Wallet } from "@solana/wallet-adapter-react";
+import { useGetToken } from "@/app/providers";
 import {
   PublicKey,
   SystemProgram,
@@ -22,6 +23,7 @@ interface SolDepositSheetProps {
 export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
   const { publicKey, sendTransaction, connected, wallets, select, connect } = useWallet();
   const { connection } = useConnection();
+  const getToken = useGetToken();
   const [solAmount, setSolAmount] = useState("0.1");
   const [solPrice, setSolPrice] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
@@ -76,9 +78,10 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
       const signature = await sendTransaction(tx, connection);
       await connection.confirmTransaction(signature, "confirmed");
 
+      const token = await getToken();
       await fetch("/api/sol/deposit", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({
           txSignature: signature,
           solAmount: sol,

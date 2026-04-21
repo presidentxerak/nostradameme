@@ -9,9 +9,14 @@ interface ProvidersProps {
 }
 
 const PrivyAvailableContext = createContext(false);
+const GetTokenContext = createContext<() => Promise<string | null>>(async () => null);
 
 export function usePrivyAvailable(): boolean {
   return useContext(PrivyAvailableContext);
+}
+
+export function useGetToken(): () => Promise<string | null> {
+  return useContext(GetTokenContext);
 }
 
 function isValidPrivyAppId(id: string): boolean {
@@ -21,9 +26,17 @@ function isValidPrivyAppId(id: string): boolean {
 function AuthSync({ children }: { children: React.ReactNode }) {
   const { authenticated, ready, getAccessToken } = usePrivy();
 
+  const getToken = useCallback(async (): Promise<string | null> => {
+    try {
+      return await getAccessToken();
+    } catch {
+      return null;
+    }
+  }, [getAccessToken]);
+
   const syncProfile = useCallback(async () => {
     try {
-      const token = await getAccessToken();
+      const token = await getToken();
       if (!token) return;
       await fetch("/api/auth/sync", {
         method: "POST",
@@ -32,7 +45,7 @@ function AuthSync({ children }: { children: React.ReactNode }) {
     } catch {
       // will retry next load
     }
-  }, [getAccessToken]);
+  }, [getToken]);
 
   useEffect(() => {
     if (ready && authenticated) {
@@ -40,7 +53,11 @@ function AuthSync({ children }: { children: React.ReactNode }) {
     }
   }, [ready, authenticated, syncProfile]);
 
-  return <>{children}</>;
+  return (
+    <GetTokenContext.Provider value={getToken}>
+      {children}
+    </GetTokenContext.Provider>
+  );
 }
 
 export function Providers({ children }: ProvidersProps) {

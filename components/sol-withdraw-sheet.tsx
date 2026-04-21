@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useGetToken } from "@/app/providers";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ interface SolWithdrawSheetProps {
 
 export function SolWithdrawSheet({ open, onOpenChange, balance }: SolWithdrawSheetProps) {
   const { publicKey, connected } = useWallet();
+  const getToken = useGetToken();
   const [usdAmount, setUsdAmount] = useState("10");
   const [solPrice, setSolPrice] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
@@ -41,9 +43,10 @@ export function SolWithdrawSheet({ open, onOpenChange, balance }: SolWithdrawShe
     setSending(true);
     setError(null);
     try {
+      const token = await getToken();
       const res = await fetch("/api/sol/withdraw", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({
           usdAmount: usd,
           solanaAddress: publicKey.toBase58(),

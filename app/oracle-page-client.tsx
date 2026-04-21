@@ -17,7 +17,7 @@ import { useMarketPools } from "@/lib/hooks/use-market-pools";
 import { useBalance } from "@/lib/hooks/use-balance";
 import { useMarketResolution } from "@/lib/hooks/use-market-resolution";
 import { useLiveFeed } from "@/lib/hooks/use-live-feed";
-import { useGetToken } from "@/lib/hooks/use-privy-token";
+import { useGetToken } from "@/app/providers";
 import { formatUsd } from "@/lib/utils/currency";
 import type { LiveFeedEntry, MarketPools, MarketWithAsset } from "@/types/app";
 import type { MarketSide } from "@/types/db";
@@ -125,7 +125,7 @@ export function OraclePageClient(props: OraclePageClientProps) {
       setUserPositionAmount(amount);
       setTimeout(() => setSealed(null), 1200);
     },
-    [betSide, current?.market],
+    [betSide, current?.market, getToken],
   );
 
   const handleAddFunds = useCallback(() => {
