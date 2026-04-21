@@ -184,7 +184,8 @@ export function OraclePageClient(props: OraclePageClientProps) {
           {/* Oracle video + quote overlay */}
           <div className="w-full relative">
             <OracleVideo
-              status={market?.status ?? "draft"}
+              startAt={market?.start_at ?? null}
+              endAt={market?.end_at ?? null}
               className="aspect-[4/3] w-full"
             />
             {/* Oracle quote overlaid on video */}

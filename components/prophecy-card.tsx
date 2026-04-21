@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { TugOfWar } from "@/components/tug-of-war";
 import { YesNoButtons } from "@/components/yes-no-buttons";
 import { CountdownGauge } from "@/components/countdown-gauge";
-import { COPY } from "@/lib/config/copy";
 import { msUntil } from "@/lib/utils/dates";
 import { formatUsdCompact } from "@/lib/utils/currency";
 import type { MarketWithAsset, MarketPools } from "@/types/app";
@@ -32,7 +31,7 @@ export function ProphecyCard({
     return () => clearInterval(interval);
   }, [market.end_at]);
 
-  const locked = market.status === "locked" || msLeft <= 5 * 60 * 1000;
+  const expired = msLeft <= 0;
 
   return (
     <motion.div
@@ -43,7 +42,6 @@ export function ProphecyCard({
       transition={{ duration: 0.3 }}
     >
       <div className="rounded-2xl border border-accent-dim/30 bg-surface/90 backdrop-blur-md px-4 py-3 border-glow-accent">
-        {/* Ticker + total volume on same line */}
         <div className="mb-2 flex items-center justify-between">
           <span className="font-sans text-lg font-bold text-text-primary tracking-wide">
             {market.asset.asset_key}
@@ -53,28 +51,23 @@ export function ProphecyCard({
           </span>
         </div>
 
-        {/* Question — Jacquard, lowercase, first letter capitalized */}
         <h2 className="mb-3 font-display text-xl leading-snug text-text-primary sm:text-2xl lowercase first-letter:uppercase">
           {market.question}
         </h2>
 
-        {/* Countdown gauge — time remaining */}
         <CountdownGauge
           startAt={market.start_at}
           endAt={market.end_at}
-          locked={locked}
         />
 
-        {/* YES/NO tug of war gauge */}
         <div className="mt-1.5">
           <TugOfWar pools={pools} />
         </div>
 
-        {/* YES / NO buttons */}
         <div className="mt-2">
           <YesNoButtons
             onBet={onBet}
-            disabled={disabled || locked}
+            disabled={disabled || expired}
             yesPct={pools.yesPct}
             noPct={pools.noPct}
           />

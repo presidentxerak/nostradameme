@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { formatRemaining } from "@/lib/utils/dates";
-import { COPY } from "@/lib/config/copy";
 
 interface CountdownGaugeProps {
   startAt: string;
   endAt: string;
-  locked: boolean;
 }
 
 function formatTimeRange(startAt: string, endAt: string): string {
@@ -19,10 +17,10 @@ function formatTimeRange(startAt: string, endAt: string): string {
     const display = h === 0 ? 12 : h > 12 ? h - 12 : h;
     return `${display}${suffix}`;
   };
-  return `${fmtH(s)} \u2192 ${fmtH(e)} UTC`;
+  return `${fmtH(s)} → ${fmtH(e)} UTC`;
 }
 
-export function CountdownGauge({ startAt, endAt, locked }: CountdownGaugeProps) {
+export function CountdownGauge({ startAt, endAt }: CountdownGaugeProps) {
   const [remaining, setRemaining] = useState(() => formatRemaining(endAt));
   const [pct, setPct] = useState(100);
 
@@ -33,7 +31,7 @@ export function CountdownGauge({ startAt, endAt, locked }: CountdownGaugeProps) 
       const end = new Date(endAt).getTime();
       const total = end - start;
       const left = end - now;
-      setRemaining(formatRemaining(endAt, now));
+      setRemaining(left <= 0 ? "0s" : formatRemaining(endAt, now));
       setPct(total > 0 ? Math.max(0, Math.min(100, (left / total) * 100)) : 0);
     };
     update();
@@ -60,15 +58,9 @@ export function CountdownGauge({ startAt, endAt, locked }: CountdownGaugeProps) 
         }}
       />
       <div className="absolute inset-0 flex items-center justify-center gap-2 text-xs font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-        {locked ? (
-          <span>{COPY.oracle.locked}</span>
-        ) : (
-          <>
-            <span>{timeRange}</span>
-            <span>-</span>
-            <span>{remaining} remaining</span>
-          </>
-        )}
+        <span>{timeRange}</span>
+        <span>-</span>
+        <span>{remaining} remaining</span>
       </div>
     </div>
   );

@@ -1,55 +1,67 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { MarketStatus } from "@/types/db";
+import { msUntil } from "@/lib/utils/dates";
 
-type VideoState = "stand" | "start" | "ended";
+type VideoPhase = "stand" | "start" | "ended";
 
-function mapStatusToVideo(status: MarketStatus): VideoState {
-  if (status === "open") return "start";
-  if (status === "resolved" || status === "canceled") return "ended";
-  return "stand";
-}
-
-const VIDEO_SRC: Record<VideoState, string> = {
+const VIDEO_SRC: Record<VideoPhase, string> = {
   stand: "/videos/prediction-stand.mp4",
   start: "/videos/prediction-start.mp4",
   ended: "/videos/prediction-ended.mp4",
 };
 
 interface OracleVideoProps {
-  status: MarketStatus;
+  startAt: string | null;
+  endAt: string | null;
   className?: string;
 }
 
-export function OracleVideo({ status, className }: OracleVideoProps) {
-  const videoState = mapStatusToVideo(status);
+function computePhase(startAt: string | null, endAt: string | null): VideoPhase {
+  if (!startAt || !endAt) return "stand";
+  const now = Date.now();
+  const start = new Date(startAt).getTime();
+  const end = new Date(endAt).getTime();
+
+  if (now < start) return "stand";
+  if (now >= end) return "ended";
+
+  const elapsed = now - start;
+  const remaining = end - now;
+
+  if (elapsed < 30000) return "stand";
+  if (remaining < 30000) return "ended";
+  return "start";
+}
+
+export function OracleVideo({ startAt, endAt, className }: OracleVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [currentSrc, setCurrentSrc] = useState(VIDEO_SRC[videoState]);
+  const [phase, setPhase] = useState<VideoPhase>(() => computePhase(startAt, endAt));
 
   useEffect(() => {
-    const newSrc = VIDEO_SRC[videoState];
-    if (newSrc !== currentSrc) {
-      setCurrentSrc(newSrc);
-    }
-  }, [videoState, currentSrc]);
+    const update = () => setPhase(computePhase(startAt, endAt));
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [startAt, endAt]);
+
+  const src = VIDEO_SRC[phase];
 
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
-    el.load();
-    el.play().catch(() => {
-      // Autoplay may be blocked — silently ignore.
-    });
-  }, [currentSrc]);
+    if (el.src !== src && !el.src.endsWith(src)) {
+      el.src = src;
+      el.load();
+      el.play().catch(() => {});
+    }
+  }, [src]);
 
   return (
-    <div
-      className={`relative overflow-hidden rounded-2xl border border-border/30 bg-surface/40 ${className ?? ""}`}
-    >
+    <div className={`relative overflow-hidden rounded-2xl border border-border/30 bg-surface/40 ${className ?? ""}`}>
       <video
         ref={videoRef}
-        src={currentSrc}
+        src={src}
         autoPlay
         loop
         muted
