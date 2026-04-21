@@ -60,7 +60,7 @@ export default function RootLayout({
         <div className="fixed inset-0 z-0">
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: "url(/background.png)" }}
+            style={{ backgroundImage: "url(/background-2.png)" }}
           />
           <div className="absolute inset-0 bg-black/60" />
         </div>
