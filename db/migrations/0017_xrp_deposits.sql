@@ -20,8 +20,5 @@ CREATE INDEX IF NOT EXISTS idx_xrp_deposits_tx ON xrp_deposit_intents(tx_hash);
 
 ALTER TABLE xrp_deposit_intents ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY xrp_deposit_intents_select ON xrp_deposit_intents
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY xrp_deposit_intents_insert ON xrp_deposit_intents
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY xrp_deposit_intents_service ON xrp_deposit_intents
+  FOR ALL USING (true) WITH CHECK (true);
