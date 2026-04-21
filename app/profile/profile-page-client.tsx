@@ -6,7 +6,6 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { usePrivyAvailable } from "@/app/providers";
 import { OracleIdentityCard } from "@/components/oracle-identity-card";
-import { LeaderboardTable } from "@/components/leaderboard-table";
 import { SettingsForm, type SettingsFormValues } from "@/components/settings-form";
 import { SolDepositSheet } from "@/components/sol-deposit-sheet";
 import { SolWithdrawSheet } from "@/components/sol-withdraw-sheet";
@@ -16,8 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { COPY } from "@/lib/config/copy";
 import { formatUsd } from "@/lib/utils/currency";
-import type { LeaderboardEntry } from "@/types/app";
-
 interface ProfilePageClientProps {
   userId: string;
   username: string;
@@ -80,28 +77,6 @@ function PrivyProfileContent(props: ProfilePageClientProps) {
   const [tab, setTab] = useState<Tab>("wallet");
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
-  const [period, setPeriod] = useState<"all_time" | "weekly" | "daily">("all_time");
-  const [lbEntries, setLbEntries] = useState<LeaderboardEntry[]>([]);
-  const [lbCurrent, setLbCurrent] = useState<LeaderboardEntry | null>(null);
-  const [lbLoading, setLbLoading] = useState(false);
-  const [lbUpdatedAt, setLbUpdatedAt] = useState<string | undefined>();
-
-  useEffect(() => {
-    if (tab !== "leaderboard") return;
-    let alive = true;
-    setLbLoading(true);
-    fetch(`/api/leaderboard?period=${period}`)
-      .then((r) => r.json())
-      .then((data: { entries: LeaderboardEntry[]; currentUserEntry: LeaderboardEntry | null; updatedAt: string }) => {
-        if (!alive) return;
-        setLbEntries(data.entries);
-        setLbCurrent(data.currentUserEntry);
-        setLbUpdatedAt(data.updatedAt);
-      })
-      .catch(() => undefined)
-      .finally(() => { if (alive) setLbLoading(false); });
-    return () => { alive = false; };
-  }, [tab, period]);
 
   if (!ready) {
     return <p className="text-center text-text-muted py-12">Loading...</p>;
@@ -135,7 +110,6 @@ function PrivyProfileContent(props: ProfilePageClientProps) {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "wallet", label: "Wallet" },
-    { key: "leaderboard", label: "Leaderboard" },
     { key: "settings", label: "Settings" },
   ];
 
@@ -171,17 +145,6 @@ function PrivyProfileContent(props: ProfilePageClientProps) {
           balance={props.balance}
           onDeposit={() => setDepositOpen(true)}
           onWithdraw={() => setWithdrawOpen(true)}
-        />
-      )}
-
-      {tab === "leaderboard" && (
-        <LeaderboardTable
-          entries={lbEntries}
-          currentUserEntry={lbCurrent}
-          period={period}
-          onPeriodChange={setPeriod}
-          loading={lbLoading}
-          updatedAt={lbUpdatedAt}
         />
       )}
 

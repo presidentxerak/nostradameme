@@ -58,7 +58,7 @@ export default function RootLayout({
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: "url(/background.png)" }}
           />
-          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 bg-black/40" />
         </div>
         {/* App content above the background */}
         <div className="relative z-10">
