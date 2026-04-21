@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getBrowserSupabase } from "@/lib/supabase/browser";
 
 interface LedgerRow {
@@ -13,10 +13,27 @@ export function useBalance(
   initial: number,
 ): number {
   const [balance, setBalance] = useState<number>(initial);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     setBalance(initial);
   }, [initial]);
+
+  const pollBalance = useCallback(() => {
+    if (!userId) return;
+    const supa = getBrowserSupabase();
+    supa
+      .from("user_balance")
+      .select("balance")
+      .eq("user_id", userId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          const newBal = Number((data as { balance?: number }).balance ?? 0);
+          setBalance(newBal);
+        }
+      });
+  }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -37,10 +54,15 @@ export function useBalance(
         },
       )
       .subscribe();
+
+    // Poll every 10s as fallback in case Realtime isn't configured
+    pollRef.current = setInterval(pollBalance, 10000);
+
     return () => {
       void supa.removeChannel(channel);
+      if (pollRef.current) clearInterval(pollRef.current);
     };
-  }, [userId]);
+  }, [userId, pollBalance]);
 
   return balance;
 }

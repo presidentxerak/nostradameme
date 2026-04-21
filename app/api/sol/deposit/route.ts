@@ -40,7 +40,6 @@ export async function POST(req: Request) {
     }
     const { txSignature, solAmount, solAddress } = parsed.data;
 
-    // Dedupe check.
     const { data: existing } = await admin
       .from("sol_deposit_intents")
       .select("id")
@@ -53,7 +52,6 @@ export async function POST(req: Request) {
     const solPrice = (await getSpotPrice("solana")) ?? 0;
     const usdAmount = solAmount * solPrice;
 
-    // Save the solana_address on the profile.
     await admin
       .from("profiles")
       .update({ solana_address: solAddress, updated_at: new Date().toISOString() })
@@ -66,10 +64,33 @@ export async function POST(req: Request) {
       sol_price_usd: solPrice,
       usd_amount: usdAmount,
       tx_signature: txSignature,
-      status: "pending",
+      status: "confirmed",
+      credited_at: new Date().toISOString(),
     });
 
-    return NextResponse.json({ ok: true, intentId: txSignature });
+    const { data: balRow } = await admin
+      .from("user_balance")
+      .select("balance")
+      .eq("user_id", profileId)
+      .maybeSingle();
+    const prevBalance = Number((balRow as { balance?: number } | null)?.balance ?? 0);
+
+    await admin.from("internal_wallet_ledger").insert({
+      user_id: profileId,
+      entry_type: "sol_deposit",
+      amount: usdAmount,
+      reference_type: "sol_deposit_intent",
+      reference_id: txSignature,
+      balance_after: prevBalance + usdAmount,
+    });
+
+    return NextResponse.json({
+      ok: true,
+      intentId: txSignature,
+      credited: true,
+      usdAmount,
+      newBalance: prevBalance + usdAmount,
+    });
   } catch (err) {
     return handleApiError(err);
   }

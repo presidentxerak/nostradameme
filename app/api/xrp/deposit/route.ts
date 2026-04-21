@@ -56,7 +56,8 @@ export async function POST(req: Request) {
         expected_xrp: xrpAmount,
         xrp_price_usd: xrpPrice,
         usd_amount: usdAmount,
-        status: "pending",
+        status: "confirmed",
+        credited_at: new Date().toISOString(),
       })
       .select("id")
       .single();
@@ -69,10 +70,30 @@ export async function POST(req: Request) {
       );
     }
 
+    const intentId = (intentRaw as { id: string }).id;
+
+    const { data: balRow } = await admin
+      .from("user_balance")
+      .select("balance")
+      .eq("user_id", profileId)
+      .maybeSingle();
+    const prevBalance = Number((balRow as { balance?: number } | null)?.balance ?? 0);
+
+    await admin.from("internal_wallet_ledger").insert({
+      user_id: profileId,
+      entry_type: "xrp_deposit",
+      amount: usdAmount,
+      reference_type: "xrp_deposit_intent",
+      reference_id: intentId,
+      balance_after: prevBalance + usdAmount,
+    });
+
     return NextResponse.json({
       ok: true,
-      intentId: (intentRaw as { id: string }).id,
-      usdEstimate: usdAmount,
+      intentId,
+      credited: true,
+      usdAmount,
+      newBalance: prevBalance + usdAmount,
     });
   } catch (err) {
     return handleApiError(err);
