@@ -10,6 +10,7 @@ import { BetSheet } from "@/components/bet-sheet";
 import { ProphecySealed } from "@/components/prophecy-sealed";
 import { RevealAnimation } from "@/components/reveal-animation";
 import { SolDepositSheet } from "@/components/sol-deposit-sheet";
+import { FiatDepositSheet } from "@/components/fiat-deposit-sheet";
 import { BottomNav } from "@/components/bottom-nav";
 import { AuthButton } from "@/components/auth-button";
 import { COPY } from "@/lib/config/copy";
@@ -70,7 +71,8 @@ export function OraclePageClient(props: OraclePageClientProps) {
   const [betSide, setBetSide] = useState<MarketSide | null>(null);
   const [betOpen, setBetOpen] = useState(false);
   const [sealed, setSealed] = useState<MarketSide | null>(null);
-  const [onrampOpen, setOnrampOpen] = useState(false);
+  const [solDepositOpen, setSolDepositOpen] = useState(false);
+  const [fiatDepositOpen, setFiatDepositOpen] = useState(false);
   const [revealVisible, setRevealVisible] = useState(false);
   const [userPositionSide, setUserPositionSide] = useState<MarketSide | null>(
     current?.userPositionSide ?? null,
@@ -128,9 +130,13 @@ export function OraclePageClient(props: OraclePageClientProps) {
     [betSide, current?.market, getToken],
   );
 
-  const handleAddFunds = useCallback(() => {
+  const handleAddFunds = useCallback((method: "fiat" | "crypto") => {
     setBetOpen(false);
-    setOnrampOpen(true);
+    if (method === "fiat") {
+      setFiatDepositOpen(true);
+    } else {
+      setSolDepositOpen(true);
+    }
   }, []);
 
   const market = current?.market ?? null;
@@ -250,7 +256,8 @@ export function OraclePageClient(props: OraclePageClientProps) {
         onAddFunds={handleAddFunds}
       />
 
-      <SolDepositSheet open={onrampOpen} onOpenChange={setOnrampOpen} />
+      <SolDepositSheet open={solDepositOpen} onOpenChange={setSolDepositOpen} />
+      <FiatDepositSheet open={fiatDepositOpen} onOpenChange={setFiatDepositOpen} />
       <ProphecySealed visible={sealed !== null} side={sealed} />
 
       <RevealAnimation

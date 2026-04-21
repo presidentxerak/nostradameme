@@ -20,7 +20,7 @@ interface BetSheetProps {
   side: "yes" | "no" | null;
   balance: number;
   onConfirm: (amount: number) => Promise<void>;
-  onAddFunds: () => void;
+  onAddFunds: (method: "fiat" | "crypto") => void;
 }
 
 export function BetSheet({
@@ -170,7 +170,7 @@ export function BetSheet({
 
             <div className="mt-5 flex flex-col gap-2">
               {insufficient ? (
-                <Button variant="default" onClick={onAddFunds} size="lg">
+                <Button variant="default" onClick={() => onAddFunds(paymentMethod ?? "crypto")} size="lg">
                   {COPY.header.addFunds}
                 </Button>
               ) : (
