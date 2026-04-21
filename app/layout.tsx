@@ -56,11 +56,15 @@ export default function RootLayout({
       className={`dark ${jacquard.variable} ${silkscreen.variable}`}
     >
       <body className="min-h-screen font-sans text-text-primary antialiased">
-        {/* Fixed background image + dark overlay */}
+        {/* Fixed background video + dark overlay */}
         <div className="fixed inset-0 z-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: "url(/background-2.png)" }}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover"
+            src="/background-video.mp4"
           />
           <div className="absolute inset-0 bg-black/60" />
         </div>
