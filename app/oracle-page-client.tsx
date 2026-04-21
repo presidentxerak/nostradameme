@@ -129,9 +129,9 @@ export function OraclePageClient(props: OraclePageClientProps) {
     [betSide, current?.market, getToken],
   );
 
-  const handleAddFunds = useCallback(() => {
+  const handleAddFunds = useCallback((method?: "sol" | "xrp") => {
     setBetOpen(false);
-    setDepositMode(null);
+    setDepositMode(method ?? null);
     setDepositOpen(true);
   }, []);
 

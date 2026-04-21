@@ -21,7 +21,7 @@ interface BetSheetProps {
   side: "yes" | "no" | null;
   balance: number;
   onConfirm: (amount: number) => Promise<void>;
-  onAddFunds: () => void;
+  onAddFunds: (method: "sol" | "xrp") => void;
 }
 
 const SOL_PRESETS = [0.03, 0.07, 0.15, 0.35];
@@ -198,7 +198,7 @@ export function BetSheet({
 
         <div className="mt-5 flex flex-col gap-2">
           {insufficient ? (
-            <Button variant="default" onClick={onAddFunds} size="lg">
+            <Button variant="default" onClick={() => onAddFunds(method)} size="lg">
               {COPY.header.addFunds}
             </Button>
           ) : (
