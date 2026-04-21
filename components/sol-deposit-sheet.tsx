@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import type { Wallet } from "@solana/wallet-adapter-react";
 import { useGetToken } from "@/app/providers";
@@ -20,6 +20,28 @@ interface SolDepositSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const MOBILE_WALLET_LINKS: Record<string, { ios: string; android: string }> = {
+  Phantom: {
+    ios: "https://apps.apple.com/app/phantom-crypto-wallet/id1598432977",
+    android: "https://play.google.com/store/apps/details?id=app.phantom",
+  },
+  Solflare: {
+    ios: "https://apps.apple.com/app/solflare/id1580902717",
+    android: "https://play.google.com/store/apps/details?id=com.solflare.mobile",
+  },
+};
+
+function isMobile(): boolean {
+  if (typeof window === "undefined") return false;
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
+
+function isInWalletBrowser(): boolean {
+  if (typeof window === "undefined") return false;
+  const w = window as unknown as Record<string, Record<string, unknown> | undefined>;
+  return !!(w.phantom?.solana || w.solflare?.isSolflare);
+}
+
 export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
   const { publicKey, sendTransaction, connected, wallets, select, connect } = useWallet();
   const { connection } = useConnection();
@@ -30,6 +52,9 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
   const [status, setStatus] = useState<"idle" | "sent" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
+
+  const mobile = useMemo(() => isMobile(), []);
+  const inWalletBrowser = useMemo(() => isInWalletBrowser(), []);
 
   useEffect(() => {
     if (!open) return;
@@ -48,8 +73,21 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
     setConnecting(true);
     setError(null);
     try {
+      if (mobile && !inWalletBrowser && wallet.readyState !== "Installed") {
+        const name = wallet.adapter.name;
+        const links = MOBILE_WALLET_LINKS[name];
+        if (links) {
+          const url = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+            ? links.ios
+            : links.android;
+          window.open(url, "_blank");
+          setError(`Open ${name} and visit this site from the wallet browser`);
+          setConnecting(false);
+          return;
+        }
+      }
       select(wallet.adapter.name);
-      await new Promise((r) => setTimeout(r, 200));
+      await new Promise((r) => setTimeout(r, 300));
       await connect();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Connection failed");
@@ -97,8 +135,11 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
     }
   };
 
-  const detectedWallets = wallets.filter(
-    (w) => w.readyState === "Installed" || w.readyState === "Loadable",
+  const availableWallets = wallets.filter(
+    (w) =>
+      w.readyState === "Installed" ||
+      w.readyState === "Loadable" ||
+      (mobile && MOBILE_WALLET_LINKS[w.adapter.name]),
   );
 
   return (
@@ -108,42 +149,50 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
           Deposit SOL
         </SheetTitle>
 
-        {/* Step 1: Connect wallet */}
         {!connected ? (
           <>
             <SheetDescription className="mb-4 text-sm text-text-secondary">
-              Select your wallet to continue
+              {mobile && !inWalletBrowser
+                ? "Tap your wallet to open it, then visit this site from the wallet browser"
+                : "Select your wallet to continue"}
             </SheetDescription>
 
             <div className="flex flex-col gap-2">
-              {detectedWallets.length > 0 ? (
-                detectedWallets.map((wallet) => (
-                  <button
-                    key={wallet.adapter.name}
-                    onClick={() => handleConnectWallet(wallet)}
-                    disabled={connecting}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-surface/60 px-4 py-3 text-left transition-all hover:border-accent/50 hover:bg-surface disabled:opacity-50"
-                  >
-                    {wallet.adapter.icon && (
-                      <img
-                        src={wallet.adapter.icon}
-                        alt={wallet.adapter.name}
-                        className="h-8 w-8 rounded-lg"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <p className="font-sans text-sm font-bold text-text-primary">
-                        {wallet.adapter.name}
-                      </p>
-                      <p className="text-xs text-text-muted">
-                        {wallet.readyState === "Installed" ? "Detected" : "Available"}
-                      </p>
-                    </div>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-text-muted">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </button>
-                ))
+              {availableWallets.length > 0 ? (
+                availableWallets.map((wallet) => {
+                  const installed = wallet.readyState === "Installed";
+                  return (
+                    <button
+                      key={wallet.adapter.name}
+                      onClick={() => handleConnectWallet(wallet)}
+                      disabled={connecting}
+                      className="flex items-center gap-3 rounded-xl border border-border bg-surface/60 px-4 py-3 text-left transition-all hover:border-accent/50 hover:bg-surface disabled:opacity-50"
+                    >
+                      {wallet.adapter.icon && (
+                        <img
+                          src={wallet.adapter.icon}
+                          alt={wallet.adapter.name}
+                          className="h-8 w-8 rounded-lg"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <p className="font-sans text-sm font-bold text-text-primary">
+                          {wallet.adapter.name}
+                        </p>
+                        <p className="text-xs text-text-muted">
+                          {installed
+                            ? "Detected"
+                            : mobile
+                              ? "Tap to open"
+                              : "Available"}
+                        </p>
+                      </div>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-text-muted">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </button>
+                  );
+                })
               ) : (
                 <div className="rounded-xl border border-border bg-surface/60 p-6 text-center">
                   <p className="text-sm text-text-secondary mb-3">
@@ -168,7 +217,6 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
             </Button>
           </>
         ) : status === "sent" ? (
-          /* Step 3: Success */
           <div className="flex flex-col items-center gap-4 py-6">
             <div className="h-16 w-16 rounded-full bg-yes/20 flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="h-8 w-8 text-yes">
@@ -184,7 +232,6 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
             </Button>
           </div>
         ) : (
-          /* Step 2: Choose amount + send */
           <>
             <SheetDescription className="mb-4 text-sm text-text-secondary">
               Send SOL from your wallet. Your balance updates in seconds.
