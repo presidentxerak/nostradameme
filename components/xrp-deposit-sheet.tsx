@@ -105,6 +105,16 @@ export function XrpDepositSheet({ open, onOpenChange }: XrpDepositSheetProps) {
           </div>
         ) : (
           <>
+            {typeof window !== "undefined" && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
+              <div className="my-4 rounded-xl border-2 border-no-glow bg-no/10 px-4 py-5 text-center">
+                <p className="font-sans text-base font-bold leading-relaxed text-white">
+                  TO ADD FUNDS: TAP YOUR WALLET TO OPEN IT, THEN OPEN THE APP WITH THE WALLET EXPLORER AND TAP IN THE URL FIELD:
+                </p>
+                <p className="mt-3 font-mono text-lg font-bold text-no-glow">
+                  nostradameme.com
+                </p>
+              </div>
+            )}
             <SheetDescription className="mb-4 text-sm text-text-secondary">
               Send XRP to the address below, then confirm.
             </SheetDescription>

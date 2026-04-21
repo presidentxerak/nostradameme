@@ -151,11 +151,20 @@ export function SolDepositSheet({ open, onOpenChange }: SolDepositSheetProps) {
 
         {!connected ? (
           <>
-            <SheetDescription className="mb-4 text-sm text-text-secondary">
-              {mobile && !inWalletBrowser
-                ? "Tap your wallet to open it, then visit this site from the wallet browser"
-                : "Select your wallet to continue"}
-            </SheetDescription>
+            {mobile && !inWalletBrowser ? (
+              <div className="my-4 rounded-xl border-2 border-no-glow bg-no/10 px-4 py-5 text-center">
+                <p className="font-sans text-base font-bold leading-relaxed text-white">
+                  TO ADD FUNDS: TAP YOUR WALLET TO OPEN IT, THEN OPEN THE APP WITH THE WALLET EXPLORER AND TAP IN THE URL FIELD:
+                </p>
+                <p className="mt-3 font-mono text-lg font-bold text-no-glow">
+                  nostradameme.com
+                </p>
+              </div>
+            ) : (
+              <SheetDescription className="mb-4 text-sm text-text-secondary">
+                Select your wallet to continue
+              </SheetDescription>
+            )}
 
             <div className="flex flex-col gap-2">
               {availableWallets.length > 0 ? (
