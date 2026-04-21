@@ -34,7 +34,7 @@ export default function LeaderboardPage() {
   return (
     <div className="relative flex h-[100dvh] flex-col overflow-hidden">
       <header className="z-40 flex items-center justify-between border-b border-border/20 bg-background/90 px-4 py-3 backdrop-blur-md">
-        <h1 className="font-display text-lg text-accent-glow text-glow-accent">
+        <h1 className="font-display text-2xl text-white">
           Leaderboard
         </h1>
         <AuthButton />

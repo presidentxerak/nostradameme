@@ -153,11 +153,14 @@ export function OraclePageClient(props: OraclePageClientProps) {
     <div className="relative flex h-[100dvh] flex-col overflow-hidden">
       {/* Top bar: logo + balance + auth */}
       <header className="z-40 flex items-center justify-between px-4 py-2 border-b border-border/20">
-        <span className="font-display text-2xl sm:text-3xl text-accent-glow text-glow-accent">
-          {COPY.header.logo}
-        </span>
+        <div className="flex items-center gap-2">
+          <img src="/logo-nostradameme.png" alt="" className="h-8 w-8 rounded-lg" />
+          <span className="font-display text-2xl sm:text-3xl text-white">
+            {COPY.header.logo}
+          </span>
+        </div>
         <div className="flex items-center gap-3">
-          <Link href="/rules" className="text-xs text-text-muted hover:text-accent-glow transition-colors">
+          <Link href="/rules" className="text-xs text-white/60 hover:text-white transition-colors">
             Rules
           </Link>
           {props.isAuthed && (

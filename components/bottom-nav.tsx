@@ -73,8 +73,8 @@ export function BottomNav({ active }: BottomNavProps) {
               className={cn(
                 "flex flex-col items-center gap-0.5 px-3 py-1 transition-colors",
                 isActive
-                  ? "text-accent-glow"
-                  : "text-text-muted hover:text-text-secondary",
+                  ? "text-white"
+                  : "text-white/40 hover:text-white/70",
               )}
             >
               <div className={cn(isActive && "text-glow-accent")}>

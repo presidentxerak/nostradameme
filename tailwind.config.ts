@@ -35,9 +35,9 @@ const config: Config = {
           glow: "#fbbf24",
         },
         text: {
-          primary: "#f0f0f5",
-          secondary: "#8b8ba0",
-          muted: "#4a4a60",
+          primary: "#ffffff",
+          secondary: "#c0c0d0",
+          muted: "#8080a0",
         },
       },
       fontFamily: {

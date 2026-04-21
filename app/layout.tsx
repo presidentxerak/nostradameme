@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   title: `${COPY.app.name} — ${COPY.app.tagline}`,
   description: COPY.app.tagline,
   metadataBase: new URL("https://nostradameme.com"),
+  icons: {
+    icon: "/logo-nostradameme.png",
+    apple: "/logo-nostradameme.png",
+  },
   openGraph: {
     title: COPY.app.name,
     description: COPY.app.tagline,
@@ -58,7 +62,7 @@ export default function RootLayout({
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: "url(/background.png)" }}
           />
-          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
         {/* App content above the background */}
         <div className="relative z-10">
