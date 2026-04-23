@@ -10,7 +10,7 @@ import { hourToSlotName } from "@/lib/utils/dates";
 import type { MarketSlot, SupportedAssetRow } from "@/types/db";
 import type { GeneratedMarket } from "@/lib/markets/types";
 
-const BETTING_WINDOW_MS = 5 * 60 * 1000;
+const BETTING_WINDOW_MS = 3 * 60 * 1000;
 
 export type Duration = "24h" | "7d" | "1m" | "3m" | "6m" | "1y";
 
@@ -32,10 +32,10 @@ export const DURATION_LABELS: Record<Duration, string> = {
   "1y": "1 year",
 };
 
-const DURATIONS: Duration[] = ["24h", "7d", "1m", "3m", "6m", "1y"];
+const DURATIONS: Duration[] = ["24h", "7d", "1m", "3m", "6m"];
 
 function pickDuration(seed: number): Duration {
-  const weights = [30, 25, 20, 12, 8, 5];
+  const weights = [30, 25, 20, 15, 10];
   const total = weights.reduce((a, b) => a + b, 0);
   let r = seed * total;
   for (let i = 0; i < DURATIONS.length; i++) {

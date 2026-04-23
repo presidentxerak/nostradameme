@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { TugOfWar } from "@/components/tug-of-war";
 import { YesNoButtons } from "@/components/yes-no-buttons";
 import { CountdownGauge } from "@/components/countdown-gauge";
-import { msUntil } from "@/lib/utils/dates";
+import { msUntil, formatRemainingLong } from "@/lib/utils/dates";
 import { DURATION_LABELS } from "@/lib/markets/duration-labels";
 import type { MarketWithAsset, MarketPools } from "@/types/app";
 
@@ -26,13 +26,17 @@ export function ProphecyCard({
 }: ProphecyCardProps) {
   const bettingEnd = market.betting_end_at ?? market.end_at;
   const [msLeft, setMsLeft] = useState(() => msUntil(bettingEnd));
+  const [resolutionCountdown, setResolutionCountdown] = useState(() =>
+    formatRemainingLong(market.end_at),
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
       setMsLeft(msUntil(bettingEnd));
+      setResolutionCountdown(formatRemainingLong(market.end_at));
     }, 1000);
     return () => clearInterval(interval);
-  }, [bettingEnd]);
+  }, [bettingEnd, market.end_at]);
 
   const bettingClosed = msLeft <= 0;
   const durationLabel = market.duration
@@ -53,9 +57,12 @@ export function ProphecyCard({
     >
       <div className="rounded-2xl border border-accent-dim/30 bg-surface/90 backdrop-blur-md px-4 py-3 border-glow-accent">
         {durationLabel && (
-          <div className="mb-2 flex items-center gap-2">
-            <span className="rounded-md bg-accent/20 px-2 py-0.5 text-xs font-bold text-accent-glow">
-              {durationLabel}
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs text-text-muted">
+              End of prediction in: <span className="font-bold text-accent-glow">{durationLabel}</span>
+            </span>
+            <span className="font-mono text-xs font-bold text-accent-glow">
+              {resolutionCountdown}
             </span>
           </div>
         )}

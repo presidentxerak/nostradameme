@@ -34,6 +34,25 @@ export function formatRemaining(endIso: string, now = Date.now()): string {
   return `${s}s`;
 }
 
+export function formatRemainingLong(endIso: string, now = Date.now()): string {
+  const end = new Date(endIso).getTime();
+  const diff = end - now;
+  if (diff <= 0) return "Ended";
+  const days = Math.floor(diff / DAY);
+  const hours = Math.floor((diff % DAY) / HOUR);
+  const mins = Math.floor((diff % HOUR) / MINUTE);
+  const secs = Math.floor((diff % MINUTE) / 1000);
+  if (days > 30) {
+    const months = Math.floor(days / 30);
+    const remDays = days % 30;
+    return remDays > 0 ? `${months}mo ${remDays}d` : `${months}mo`;
+  }
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${mins}m`;
+  if (mins > 0) return `${mins}m ${secs}s`;
+  return `${secs}s`;
+}
+
 export function msUntil(endIso: string, now = Date.now()): number {
   return Math.max(0, new Date(endIso).getTime() - now);
 }

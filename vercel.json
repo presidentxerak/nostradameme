@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/api/cron/create-hourly-market",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/3 * * * *"
     },
     {
       "path": "/api/cron/resolve-markets",
