@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { TugOfWar } from "@/components/tug-of-war";
 import { YesNoButtons } from "@/components/yes-no-buttons";
-import { CountdownGauge } from "@/components/countdown-gauge";
+import { BettingTimer } from "@/components/betting-timer";
 import { msUntil, formatRemainingLong } from "@/lib/utils/dates";
 import { DURATION_LABELS } from "@/lib/markets/duration-labels";
 import type { MarketWithAsset, MarketPools } from "@/types/app";
@@ -71,11 +71,10 @@ export function ProphecyCard({
           {market.question}
         </h2>
 
-        <CountdownGauge
+        <BettingTimer
           startAt={market.start_at}
           endAt={bettingEnd}
           totalVolume={pools.totalVolume}
-          label="Betting closes"
           onExpired={handleExpired}
         />
 

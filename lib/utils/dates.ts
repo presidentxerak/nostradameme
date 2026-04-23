@@ -45,10 +45,10 @@ export function formatRemainingLong(endIso: string, now = Date.now()): string {
   if (days > 30) {
     const months = Math.floor(days / 30);
     const remDays = days % 30;
-    return remDays > 0 ? `${months}mo ${remDays}d` : `${months}mo`;
+    return remDays > 0 ? `${months}mo ${remDays}d ${hours}h ${mins}m ${secs}s` : `${months}mo ${hours}h ${mins}m ${secs}s`;
   }
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${mins}m`;
+  if (days > 0) return `${days}d ${hours}h ${mins}m ${secs}s`;
+  if (hours > 0) return `${hours}h ${mins}m ${secs}s`;
   if (mins > 0) return `${mins}m ${secs}s`;
   return `${secs}s`;
 }
