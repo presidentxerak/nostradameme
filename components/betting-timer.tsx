@@ -11,27 +11,36 @@ interface BettingTimerProps {
   onExpired?: () => void;
 }
 
+function formatMmSs(ms: number): string {
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 export function BettingTimer({ startAt, endAt, totalVolume, onExpired }: BettingTimerProps) {
-  const [remaining, setRemaining] = useState(() => formatRemaining(endAt));
+  const [elapsed, setElapsed] = useState("00:00");
+  const [remaining, setRemaining] = useState("03:00");
   const [expired, setExpired] = useState(false);
 
   useEffect(() => {
     const update = () => {
-      const left = new Date(endAt).getTime() - Date.now();
-      if (left <= 0) {
-        setRemaining("0s");
-        if (!expired) {
-          setExpired(true);
-          onExpired?.();
-        }
-      } else {
-        setRemaining(formatRemaining(endAt));
+      const now = Date.now();
+      const start = new Date(startAt).getTime();
+      const end = new Date(endAt).getTime();
+      const elapsedMs = now - start;
+      const leftMs = end - now;
+      setElapsed(formatMmSs(elapsedMs));
+      setRemaining(formatMmSs(leftMs));
+      if (leftMs <= 0 && !expired) {
+        setExpired(true);
+        onExpired?.();
       }
     };
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [endAt, expired, onExpired]);
+  }, [startAt, endAt, expired, onExpired]);
 
   return (
     <div className="flex items-center justify-between rounded-xl border border-border/40 bg-background/60 px-4 py-2.5">
@@ -47,7 +56,7 @@ export function BettingTimer({ startAt, endAt, totalVolume, onExpired }: Betting
               {/* All sand at bottom */}
               <path d="M8 18c0-1 .8-2 2-2.8L12 14l2 1.2c1.2.8 2 1.8 2 2.8v3H8v-3z" fill="currentColor" opacity="0.4" />
             </svg>
-            <span className="text-xs font-bold uppercase tracking-wider text-no-glow">
+            <span className="text-xs font-bold text-no-glow">
               Betting closed
             </span>
           </>
@@ -68,14 +77,16 @@ export function BettingTimer({ startAt, endAt, totalVolume, onExpired }: Betting
               {/* Sand bottom (growing) */}
               <path d="M9.5 19.5c0-.5.5-1 1.2-1.5l1.3-1 1.3 1c.7.5 1.2 1 1.2 1.5V21h-5v-1.5z" fill="currentColor" opacity="0.4" />
             </svg>
-            <span className="text-xs font-bold uppercase tracking-wider text-yes-glow">
-              Betting open
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-yes-glow">
+                Betting open: <span className="font-mono text-text-primary">{elapsed}</span>
+              </span>
+              <span className="text-xs text-text-muted">
+                Will end in: <span className="font-mono font-bold text-text-primary">{remaining}</span>
+              </span>
+            </div>
           </>
         )}
-        <span className="font-mono text-lg font-bold text-text-primary">
-          {remaining}
-        </span>
       </div>
       {typeof totalVolume === "number" && (
         <span className="font-mono text-sm font-bold text-gold-glow text-glow-gold">
