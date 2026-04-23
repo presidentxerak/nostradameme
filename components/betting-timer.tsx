@@ -38,14 +38,23 @@ export function BettingTimer({ startAt, endAt, totalVolume, onExpired }: Betting
       <div className="flex items-center gap-2">
         {expired ? (
           <>
-            <span className="h-2.5 w-2.5 rounded-full bg-no" />
+            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-no-glow">
+              <path d="M6 2h12v4l-4 4 4 4v4H6v-4l4-4-4-4V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M6 2h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M6 22h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
             <span className="text-xs font-bold uppercase tracking-wider text-no-glow">
               Betting closed
             </span>
           </>
         ) : (
           <>
-            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-yes" />
+            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 animate-pulse text-yes-glow">
+              <path d="M6 2h12v4l-4 4 4 4v4H6v-4l4-4-4-4V2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M6 2h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M6 22h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <path d="M10 16h4l-2-2-2 2z" fill="currentColor" opacity="0.6" />
+            </svg>
             <span className="text-xs font-bold uppercase tracking-wider text-yes-glow">
               Betting open
             </span>
