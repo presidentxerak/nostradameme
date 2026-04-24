@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShareProphecyButton } from "@/components/share-prophecy-button";
 import { COPY } from "@/lib/config/copy";
 import { formatUsd } from "@/lib/utils/currency";
-import { formatRelative, formatRemaining } from "@/lib/utils/dates";
+import { formatRelative, formatRemainingLong } from "@/lib/utils/dates";
 import type { HistoryEntry } from "@/types/app";
 
 interface PredictionHistoryListProps {
@@ -16,16 +16,6 @@ interface PredictionHistoryListProps {
   onLoadMore?: () => void;
   hasMore?: boolean;
   loading?: boolean;
-}
-
-function slotLabel(slot: HistoryEntry["slot"]): string {
-  return slot === "morning"
-    ? COPY.slots.morning.short
-    : slot === "noon"
-      ? COPY.slots.noon.short
-      : slot === "night"
-        ? COPY.slots.night.short
-        : COPY.slots.weekly.short;
 }
 
 function groupEntries(entries: HistoryEntry[]) {
@@ -62,35 +52,23 @@ export function PredictionHistoryList({
   return (
     <div className="flex flex-col gap-6">
       {groups.active.length > 0 && (
-        <Section title={COPY.profile.history.activeGroup}>
+        <Section title={`${COPY.profile.history.activeGroup} (${groups.active.length})`}>
           {groups.active.map((e) => (
-            <HistoryItem
-              key={e.id}
-              entry={e}
-              username={username}
-            />
+            <ActiveItem key={e.id} entry={e} />
           ))}
         </Section>
       )}
       {groups.won.length > 0 && (
-        <Section title={COPY.profile.history.wonGroup}>
+        <Section title={`${COPY.profile.history.wonGroup} (${groups.won.length})`}>
           {groups.won.map((e) => (
-            <HistoryItem
-              key={e.id}
-              entry={e}
-              username={username}
-            />
+            <ResolvedItem key={e.id} entry={e} username={username} />
           ))}
         </Section>
       )}
       {groups.lost.length > 0 && (
-        <Section title={COPY.profile.history.lostGroup}>
+        <Section title={`${COPY.profile.history.lostGroup} (${groups.lost.length})`}>
           {groups.lost.map((e) => (
-            <HistoryItem
-              key={e.id}
-              entry={e}
-              username={username}
-            />
+            <ResolvedItem key={e.id} entry={e} username={username} />
           ))}
         </Section>
       )}
@@ -120,53 +98,77 @@ function Section({
   );
 }
 
-function HistoryItem({
-  entry,
-  username,
-}: {
-  entry: HistoryEntry;
-  username: string;
-}) {
+function ActiveItem({ entry }: { entry: HistoryEntry }) {
+  const [countdown, setCountdown] = useState(() => formatRemainingLong(entry.endAt));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCountdown(formatRemainingLong(entry.endAt));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [entry.endAt]);
+
   const sideLabel = entry.side === "yes" ? COPY.bet.yes : COPY.bet.no;
 
   return (
-    <Card className="border-border">
-      <div className="flex items-center gap-2 text-xs text-text-muted">
-        <span className="font-sans text-[10px] tracking-widest text-accent">{slotLabel(entry.slot)}</span>
-        <span className="font-mono">{entry.assetKey}</span>
-        <span>&middot;</span>
-        <span>{formatRelative(entry.createdAt)}</span>
-      </div>
-      <p className="mt-1 text-sm text-text-primary">{entry.question}</p>
+    <Card className="border-accent/30">
+      <p className="text-sm font-bold text-text-primary">{entry.question}</p>
       <div className="mt-2 flex items-center gap-3 text-xs">
         <span className="text-text-secondary">{COPY.profile.history.youSaid}:</span>
-        <Badge variant={entry.side === "yes" ? "yes" : "no"}>
-          {sideLabel}
-        </Badge>
-        <span className="font-mono text-text-primary">
-          {formatUsd(entry.amount)}
-        </span>
+        <Badge variant={entry.side === "yes" ? "yes" : "no"}>{sideLabel}</Badge>
+        <span className="font-mono text-text-primary">{formatUsd(entry.amount)}</span>
       </div>
-      <div className="mt-2 text-xs">
-        {entry.marketStatus !== "resolved" ? (
-          <span className="text-text-secondary">
-            {COPY.profile.history.status}: {COPY.profile.history.active} &middot;{" "}
-            {formatRemaining(entry.endAt)} {COPY.profile.history.hoursLeft}
-          </span>
-        ) : entry.userWon ? (
-          <span className="text-yes-glow">
-            {COPY.profile.history.result}: {COPY.profile.history.won} ·{" "}
-            +{formatUsd(entry.netPayout ?? 0)}
-          </span>
-        ) : (
-          <span className="text-no-glow">
-            {COPY.profile.history.result}: {COPY.profile.history.lost} ·{" "}
-            -{formatUsd(entry.amount)}
-          </span>
-        )}
+      <div className="mt-2 flex items-center justify-between rounded-lg bg-accent/10 px-3 py-2">
+        <span className="text-xs text-text-muted">Result in:</span>
+        <span className="font-mono text-sm font-bold text-accent-glow">{countdown}</span>
       </div>
-      {entry.marketStatus === "resolved" && entry.userWon && (
-        <div className="mt-3">
+    </Card>
+  );
+}
+
+function ResolvedItem({ entry, username }: { entry: HistoryEntry; username: string }) {
+  const won = entry.userWon === true;
+  const oracleAnswer = entry.resolutionSide === "yes" ? "YES" : "NO";
+  const userSide = entry.side === "yes" ? "YES" : "NO";
+
+  return (
+    <Card className={won ? "border-yes/40" : "border-no/40"}>
+      <p className="text-sm font-bold text-text-primary">{entry.question}</p>
+
+      <div className="mt-2 flex items-center gap-3 text-xs">
+        <span className="text-text-secondary">You said:</span>
+        <Badge variant={entry.side === "yes" ? "yes" : "no"}>{userSide}</Badge>
+        <span className="font-mono text-text-primary">{formatUsd(entry.amount)}</span>
+      </div>
+
+      <div className={`mt-3 rounded-lg px-4 py-3 ${won ? "bg-yes/10 border border-yes/30" : "bg-no/10 border border-no/30"}`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-text-muted">The oracle answered:</p>
+            <p className={`text-lg font-bold ${entry.resolutionSide === "yes" ? "text-yes-glow" : "text-no-glow"}`}>
+              {oracleAnswer}
+            </p>
+          </div>
+          <div className="text-right">
+            {won ? (
+              <>
+                <p className="text-xs text-yes">You won</p>
+                <p className="text-xl font-bold text-yes-glow">+{formatUsd(entry.netPayout ?? 0)}</p>
+              </>
+            ) : (
+              <>
+                <p className="text-xs text-no">You lost</p>
+                <p className="text-xl font-bold text-no-glow">-{formatUsd(entry.amount)}</p>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <p className="mt-2 text-right text-[10px] text-text-muted">{formatRelative(entry.createdAt)}</p>
+
+      {won && (
+        <div className="mt-2">
           <ShareProphecyButton
             marketId={entry.marketId}
             side={entry.side}
