@@ -161,6 +161,23 @@ export async function executePayouts(marketId: string): Promise<void> {
     // Update user stats.
     await updateUserStats(results, resolutionSide);
 
+    // Notify users of results.
+    try {
+      const { notifyResolutionResults } = await import("@/lib/notifications/resolution-alerts");
+      await notifyResolutionResults(
+        marketId,
+        results.map((r) => ({
+          userId: r.userId,
+          isWinner: r.isWinner,
+          netAmount: r.netAmount,
+          stake: r.stake,
+        })),
+      );
+    } catch (notifyErr) {
+      // eslint-disable-next-line no-console
+      console.error("[payout] notification failed", notifyErr);
+    }
+
     await admin
       .from("payout_runs")
       .update({
