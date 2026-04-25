@@ -151,6 +151,12 @@ export function SettingsForm({
         >
           {COPY.profile.settings.privacy}
         </a>
+        <a
+          href="/contact"
+          className="block py-1 text-sm text-accent-glow underline"
+        >
+          Contact
+        </a>
         <p className="mt-3 text-xs text-text-muted">
           {COPY.profile.settings.responsible}
         </p>
