@@ -4,6 +4,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COPY } from "@/lib/config/copy";
 import { formatUsd } from "@/lib/utils/currency";
+import { avatarUrlFor } from "@/lib/utils/meme-names";
 import { cn } from "@/lib/utils/cn";
 import type { LeaderboardEntry } from "@/types/app";
 
@@ -120,7 +121,9 @@ function Row({
       <span className="font-mono text-text-secondary">
         {medal || entry.rank}
       </span>
-      <div className="flex flex-col overflow-hidden">
+      <div className="flex items-center gap-2 overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={avatarUrlFor(entry.userId)} alt="" className="h-6 w-6 shrink-0 rounded-full" />
         <span
           className={cn(
             "truncate font-mono",

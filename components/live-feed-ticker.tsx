@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { COPY } from "@/lib/config/copy";
 import { formatRelative } from "@/lib/utils/dates";
 import { formatUsd } from "@/lib/utils/currency";
+import { avatarUrlFor } from "@/lib/utils/meme-names";
 import { useReducedMotionPreference } from "@/lib/hooks/use-reduced-motion";
 import type { LiveFeedEntry } from "@/types/app";
 
@@ -60,9 +61,10 @@ export function LiveFeedTicker({ feed }: LiveFeedTickerProps) {
 function FeedEntry({ entry }: { entry: LiveFeedEntry }) {
   const isYes = entry.side === "yes";
   return (
-    <div className="flex h-10 items-center justify-center gap-3 px-4 text-xs">
-      <span className={`h-2 w-2 shrink-0 rounded-full ${isYes ? "bg-yes shadow-[0_0_6px_rgba(0,255,200,0.6)]" : "bg-no shadow-[0_0_6px_rgba(255,0,98,0.6)]"}`} />
-      <span className="text-text-secondary">
+    <div className="flex h-10 items-center justify-center gap-2 px-4 text-xs">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={avatarUrlFor(entry.userId)} alt="" className="h-5 w-5 shrink-0 rounded-full" />
+      <span className="text-text-secondary truncate max-w-[80px]">
         {entry.username}
       </span>
       <span className="text-text-primary font-bold">

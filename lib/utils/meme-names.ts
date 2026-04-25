@@ -56,8 +56,15 @@ export function resolveUsername(
   return generateMemeUsername(userId);
 }
 
+const AVATAR_COUNT = 0;
+
 export function avatarUrlFor(userId: string): string {
-  return `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(
+  if (AVATAR_COUNT > 0) {
+    const h = fnv1a(userId);
+    const idx = (h % AVATAR_COUNT) + 1;
+    return `/icons/avatars/avatar-${String(idx).padStart(2, "0")}.png`;
+  }
+  return `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(
     userId,
-  )}&backgroundColor=12121a&scale=90`;
+  )}&backgroundColor=12121a`;
 }
