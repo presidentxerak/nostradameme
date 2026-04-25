@@ -71,24 +71,40 @@ export function XrplWalletProvider({ children }: { children: ReactNode }) {
           adapters,
           network: "mainnet",
           autoConnect: true,
-        }) as unknown as XrplWalletManager;
+        });
 
-        managerRef.current = manager;
+        const rawAdapters = (manager as unknown as Record<string, unknown>).adapters;
+        const adapterList: Array<{ name: string; icon?: string }> = Array.isArray(rawAdapters)
+          ? rawAdapters
+          : adapters.map((a) => ({ name: (a as { name: string }).name, icon: (a as { icon?: string }).icon }));
 
-        manager.on("connect", (account: unknown) => {
+        const wrapped: XrplWalletManager = {
+          get adapters() { return adapterList; },
+          get connected() { return (manager as unknown as { connected: boolean }).connected; },
+          get account() { return (manager as unknown as { account: { address: string } | null }).account; },
+          get wallet() { return (manager as unknown as { wallet: { name: string } | null }).wallet; },
+          connect: (name: string) => (manager as unknown as { connect: (n: string) => Promise<{ address: string }> }).connect(name),
+          disconnect: () => (manager as unknown as { disconnect: () => Promise<void> }).disconnect(),
+          signAndSubmit: (tx: Record<string, unknown>) => (manager as unknown as { signAndSubmit: (t: Record<string, unknown>) => Promise<{ hash: string }> }).signAndSubmit(tx),
+          on: (event: string, handler: (...args: unknown[]) => void) => (manager as unknown as { on: (e: string, h: (...a: unknown[]) => void) => void }).on(event, handler),
+        };
+
+        managerRef.current = wrapped;
+
+        wrapped.on("connect", (account: unknown) => {
           const acc = account as { address: string };
           setConnected(true);
           setAddress(acc.address);
-          setWalletName(manager.wallet?.name ?? null);
+          setWalletName(wrapped.wallet?.name ?? null);
         });
 
-        manager.on("disconnect", () => {
+        wrapped.on("disconnect", () => {
           setConnected(false);
           setAddress(null);
           setWalletName(null);
         });
 
-        manager.on("accountChange", (account: unknown) => {
+        wrapped.on("accountChange", (account: unknown) => {
           const acc = account as { address: string };
           setAddress(acc.address);
         });
