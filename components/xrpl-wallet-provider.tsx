@@ -10,11 +10,11 @@ import {
 } from "react";
 
 interface XrplWalletManager {
-  adapters: Array<{ name: string; icon?: string }>;
+  adapters: Array<{ id: string; name: string; icon?: string }>;
   connected: boolean;
   account: { address: string } | null;
   wallet: { name: string } | null;
-  connect: (adapterName: string) => Promise<unknown>;
+  connect: (adapterId: string) => Promise<unknown>;
   disconnect: () => Promise<void>;
   signAndSubmit: (tx: Record<string, unknown>) => Promise<{ hash: string }>;
   on: (event: string, handler: (...args: unknown[]) => void) => void;
@@ -74,9 +74,17 @@ export function XrplWalletProvider({ children }: { children: ReactNode }) {
         });
 
         const rawAdapters = (manager as unknown as Record<string, unknown>).adapters;
-        const adapterList: Array<{ name: string; icon?: string }> = Array.isArray(rawAdapters)
-          ? rawAdapters
-          : adapters.map((a) => ({ name: (a as { name: string }).name, icon: (a as { icon?: string }).icon }));
+        const adapterList: Array<{ id: string; name: string; icon?: string }> = Array.isArray(rawAdapters)
+          ? rawAdapters.map((a: Record<string, unknown>) => ({
+              id: String(a.id ?? a.name ?? ""),
+              name: String(a.name ?? a.id ?? ""),
+              icon: a.icon ? String(a.icon) : undefined,
+            }))
+          : adapters.map((a) => ({
+              id: String((a as { id?: string }).id ?? (a as { name: string }).name),
+              name: (a as { name: string }).name,
+              icon: (a as { icon?: string }).icon,
+            }));
 
         const wrapped: XrplWalletManager = {
           get adapters() { return adapterList; },

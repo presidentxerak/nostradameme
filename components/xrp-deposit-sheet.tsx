@@ -130,12 +130,12 @@ export function XrpDepositSheet({ open, onOpenChange, onComplete }: XrpDepositSh
             <div className="flex flex-col gap-3">
               {manager?.adapters.map((adapter) => (
                 <button
-                  key={adapter.name}
+                  key={adapter.id}
                   onClick={async () => {
                     setConnecting(true);
                     setError(null);
                     try {
-                      await manager.connect(adapter.name);
+                      await manager.connect(adapter.id);
                     } catch (err) {
                       setError(err instanceof Error ? err.message : "Connection failed");
                     } finally {
