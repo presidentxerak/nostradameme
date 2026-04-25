@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { QRCodeSVG } from "qrcode.react";
+import { useState, useEffect } from "react";
+import { useXrplWallet } from "@/components/xrpl-wallet-provider";
 import { useGetToken } from "@/app/providers";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
 interface XrpDepositSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -15,16 +16,14 @@ interface XrpDepositSheetProps {
 const TREASURY_ADDRESS = process.env.NEXT_PUBLIC_XRPL_TREASURY_ADDRESS ?? "";
 
 export function XrpDepositSheet({ open, onOpenChange, onComplete }: XrpDepositSheetProps) {
+  const { manager, connected, address, walletName } = useXrplWallet();
   const getToken = useGetToken();
   const [xrpAmount, setXrpAmount] = useState("10");
-  const [xrpAddress, setXrpAddress] = useState("");
   const [xrpPrice, setXrpPrice] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState<"idle" | "sent" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  const treasuryAddress = TREASURY_ADDRESS;
+  const [connecting, setConnecting] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -41,41 +40,53 @@ export function XrpDepositSheet({ open, onOpenChange, onComplete }: XrpDepositSh
   const xrp = Number(xrpAmount);
   const usdValue = xrpPrice && xrp > 0 ? (xrp * xrpPrice).toFixed(2) : "—";
 
-  const handleCopyAddress = useCallback(async () => {
-    if (!treasuryAddress) return;
-    await navigator.clipboard.writeText(treasuryAddress);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [treasuryAddress]);
-
-  const handleConfirm = async () => {
-    if (xrp <= 0 || !xrpAddress) {
-      setError("Enter the XRP amount and your XRP address");
-      return;
+  const handleConnect = async () => {
+    if (!manager) return;
+    setConnecting(true);
+    setError(null);
+    try {
+      const connectorEl = document.querySelector("xrpl-wallet-connector");
+      if (connectorEl && "open" in connectorEl) {
+        (connectorEl as HTMLElement & { setWalletManager: (m: unknown) => void; open: () => void }).setWalletManager(manager);
+        (connectorEl as HTMLElement & { open: () => void }).open();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Connection failed");
+    } finally {
+      setConnecting(false);
     }
-    if (!xrpAddress.startsWith("r") || xrpAddress.length < 25) {
-      setError("Enter a valid XRP address (starts with r)");
+  };
+
+  const handleSend = async () => {
+    if (!manager || !connected || !address || !TREASURY_ADDRESS) return;
+    if (xrp <= 0) {
+      setError("Enter a valid amount");
       return;
     }
     setSending(true);
     setError(null);
     try {
+      const drops = String(Math.round(xrp * 1_000_000));
+      const result = await manager.signAndSubmit({
+        TransactionType: "Payment",
+        Account: address,
+        Destination: TREASURY_ADDRESS,
+        Amount: drops,
+      });
+
       const token = await getToken();
-      const res = await fetch("/api/xrp/deposit", {
+      await fetch("/api/xrp/deposit", {
         method: "POST",
         headers: {
           "content-type": "application/json",
           ...(token ? { authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ xrpAmount: xrp, xrpAddress }),
+        body: JSON.stringify({ xrpAmount: xrp, xrpAddress: address }),
       });
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: { message?: string } };
-        throw new Error(data.error?.message ?? "Failed to register deposit");
-      }
+
       setStatus("sent");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Transaction failed");
       setStatus("error");
     } finally {
       setSending(false);
@@ -96,9 +107,9 @@ export function XrpDepositSheet({ open, onOpenChange, onComplete }: XrpDepositSh
                 <path d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="text-lg font-bold text-yes-glow">Funds added!</p>
+            <p className="text-lg font-bold text-yes-glow">XRP sent!</p>
             <p className="max-w-xs text-center text-sm text-text-muted">
-              Your balance is ready. You can bet now!
+              Your balance will update once confirmed on-chain (usually under 1 minute).
             </p>
             {onComplete ? (
               <Button onClick={() => { setStatus("idle"); onOpenChange(false); onComplete(); }} size="lg">
@@ -110,49 +121,66 @@ export function XrpDepositSheet({ open, onOpenChange, onComplete }: XrpDepositSh
               </Button>
             )}
           </div>
-        ) : (
+        ) : !connected ? (
           <>
-            {typeof window !== "undefined" && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && (
-              <div className="my-4 rounded-xl border-2 border-no-glow bg-no/10 px-4 py-5 text-center">
-                <p className="font-sans text-base font-bold leading-relaxed text-white">
-                  TO ADD FUNDS: TAP YOUR WALLET TO OPEN IT, THEN OPEN THE APP WITH THE WALLET EXPLORER AND TAP IN THE URL FIELD:
-                </p>
-                <p className="mt-3 font-mono text-lg font-bold text-no-glow">
-                  nostradameme.com
-                </p>
-              </div>
-            )}
             <SheetDescription className="mb-4 text-sm text-text-secondary">
-              Send XRP to the address below, then confirm.
+              Connect your XRP wallet to deposit
             </SheetDescription>
 
-            {/* Treasury address + QR */}
-            <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-surface/60 p-4">
-              <p className="text-xs text-text-muted">Send XRP to:</p>
-              {treasuryAddress && (
-                <QRCodeSVG
-                  value={treasuryAddress}
-                  size={140}
-                  bgColor="transparent"
-                  fgColor="#9d5cf0"
-                  level="M"
-                />
-              )}
-              <p className="break-all text-center font-mono text-xs text-text-primary">
-                {treasuryAddress || "Treasury address not configured"}
-              </p>
-              {treasuryAddress && (
+            <div className="flex flex-col gap-3">
+              {manager?.adapters.map((adapter: { name: string; icon?: string }) => (
                 <button
-                  onClick={handleCopyAddress}
-                  className="rounded-lg border border-border px-3 py-1.5 text-xs text-accent-glow transition-colors hover:bg-accent/10"
+                  key={adapter.name}
+                  onClick={async () => {
+                    setConnecting(true);
+                    setError(null);
+                    try {
+                      await manager.connect(adapter.name);
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : "Connection failed");
+                    } finally {
+                      setConnecting(false);
+                    }
+                  }}
+                  disabled={connecting}
+                  className="flex items-center gap-3 rounded-xl border border-border bg-surface/60 px-4 py-3 text-left transition-all hover:border-accent/50 hover:bg-surface disabled:opacity-50"
                 >
-                  {copied ? "Copied!" : "Copy address"}
+                  {adapter.icon && (
+                    <img src={adapter.icon} alt={adapter.name} className="h-8 w-8 rounded-lg" />
+                  )}
+                  <div className="flex-1">
+                    <p className="font-sans text-sm font-bold text-text-primary">{adapter.name}</p>
+                  </div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4 text-text-muted">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
                 </button>
+              )) ?? (
+                <p className="text-center text-sm text-text-muted">Loading wallets...</p>
               )}
             </div>
 
-            {/* Amount input */}
-            <div className="mt-4 space-y-3">
+            {error && <p className="mt-3 text-center text-sm text-no-glow">{error}</p>}
+
+            <Button variant="ghost" className="mt-4 w-full" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+          </>
+        ) : (
+          <>
+            <SheetDescription className="mb-4 text-sm text-text-secondary">
+              Send XRP from your wallet. Your balance updates in under a minute.
+            </SheetDescription>
+
+            <div className="mb-3 flex items-center gap-2 rounded-lg bg-surface/60 px-3 py-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-yes" />
+              <span className="text-xs text-text-primary">{walletName} connected</span>
+            </div>
+            <p className="mb-3 break-all font-mono text-xs text-text-muted">
+              {address}
+            </p>
+
+            <div className="space-y-3">
               <div>
                 <label htmlFor="xrp-amount" className="mb-1 block text-xs text-text-muted">
                   Amount (XRP)
@@ -186,30 +214,16 @@ export function XrpDepositSheet({ open, onOpenChange, onComplete }: XrpDepositSh
                 </p>
               )}
 
-              {/* Sender address */}
-              <div>
-                <label htmlFor="xrp-address" className="mb-1 block text-xs text-text-muted">
-                  Your XRP address (starts with r)
-                </label>
-                <Input
-                  id="xrp-address"
-                  type="text"
-                  placeholder="rYourXRPAddress..."
-                  value={xrpAddress}
-                  onChange={(e) => setXrpAddress(e.target.value.trim())}
-                />
-              </div>
-
               {error && <p className="text-center text-sm text-no-glow">{error}</p>}
             </div>
 
             <div className="mt-5 flex flex-col gap-2">
               <Button
-                onClick={handleConfirm}
-                disabled={sending || xrp <= 0 || !xrpAddress}
+                onClick={handleSend}
+                disabled={sending || xrp <= 0}
                 size="lg"
               >
-                {sending ? "Confirming..." : "I've sent the XRP"}
+                {sending ? "Sending..." : `Send ${xrpAmount} XRP`}
               </Button>
               <Button variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel

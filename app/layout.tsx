@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Providers } from "@/app/providers";
 import { SolanaProvider } from "@/components/solana-provider";
+import { XrplWalletProvider } from "@/components/xrpl-wallet-provider";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { COPY } from "@/lib/config/copy";
 import "./globals.css";
@@ -71,7 +72,9 @@ export default function RootLayout({
         {/* App content above the background */}
         <div className="relative z-10">
           <Providers>
-            <SolanaProvider>{children}</SolanaProvider>
+            <SolanaProvider>
+              <XrplWalletProvider>{children}</XrplWalletProvider>
+            </SolanaProvider>
           </Providers>
           <ServiceWorkerRegister />
         </div>
