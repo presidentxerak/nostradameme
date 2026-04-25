@@ -5,14 +5,17 @@ import { verifyPrivyAccessToken } from "@/lib/privy/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { AppError } from "@/lib/utils/errors";
 import { getSpotPrice } from "@/lib/coingecko/service";
+import { verifyTransaction } from "@/lib/solana/client";
+import { SOLANA_CONFIG } from "@/lib/solana/config";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const BodySchema = z.object({
-  txSignature: z.string().min(10),
-  solAmount: z.number().positive(),
-  solAddress: z.string().min(20),
+  txSignature: z.string().min(20).max(120),
+  solAmount: z.number().positive().max(1000),
+  solAddress: z.string().min(20).max(60),
 });
 
 export async function POST(req: Request) {
@@ -49,8 +52,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, deduped: true });
     }
 
+    if (!SOLANA_CONFIG.treasuryAddress) {
+      throw new AppError("config_error", "Treasury not configured", 500);
+    }
+
+    const minLamports = Math.floor(solAmount * LAMPORTS_PER_SOL * 0.95);
+    const { confirmed, lamports } = await verifyTransaction(
+      txSignature,
+      solAddress,
+      SOLANA_CONFIG.treasuryAddress,
+      minLamports,
+    );
+    if (!confirmed) {
+      throw new AppError("tx_not_confirmed", "Transaction not verified on-chain. Please wait and retry.", 400);
+    }
+
+    const verifiedSol = lamports / LAMPORTS_PER_SOL;
     const solPrice = (await getSpotPrice("solana")) ?? 0;
-    const usdAmount = solAmount * solPrice;
+    const usdAmount = verifiedSol * solPrice;
 
     await admin
       .from("profiles")
@@ -60,7 +79,7 @@ export async function POST(req: Request) {
     await admin.from("sol_deposit_intents").insert({
       user_id: profileId,
       solana_address: solAddress,
-      expected_sol: solAmount,
+      expected_sol: verifiedSol,
       sol_price_usd: solPrice,
       usd_amount: usdAmount,
       tx_signature: txSignature,

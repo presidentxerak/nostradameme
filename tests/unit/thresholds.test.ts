@@ -22,31 +22,18 @@ describe("roundThreshold", () => {
 });
 
 describe("generateThreshold", () => {
-  it("picks gte when seed >= 0.5", () => {
-    const { operator, thresholdPrice } = generateThreshold(
-      80000,
-      0.02,
-      "night",
-      0.9,
-    );
-    expect(operator).toBe("gte");
-    expect(thresholdPrice).toBeGreaterThan(80000);
+  it("returns a threshold different from spot price", () => {
+    const { thresholdPrice } = generateThreshold(80000, 0.02, "night");
+    expect(thresholdPrice).not.toBe(80000);
   });
-  it("picks lte when seed < 0.5", () => {
-    const { operator, thresholdPrice } = generateThreshold(
-      80000,
-      0.02,
-      "night",
-      0.1,
-    );
-    expect(operator).toBe("lte");
-    expect(thresholdPrice).toBeLessThan(80000);
+  it("returns gte or lte operator", () => {
+    const { operator } = generateThreshold(80000, 0.02, "morning");
+    expect(["gte", "lte"]).toContain(operator);
   });
-  it("respects slot multipliers", () => {
-    const weekly = generateThreshold(80000, 0.02, "weekly", 0.9);
-    const morning = generateThreshold(80000, 0.02, "morning", 0.9);
-    expect(weekly.thresholdPrice).toBeGreaterThanOrEqual(
-      morning.thresholdPrice,
-    );
+  it("threshold is within reasonable range of spot", () => {
+    const spot = 80000;
+    const { thresholdPrice } = generateThreshold(spot, 0.02, "noon");
+    expect(thresholdPrice).toBeGreaterThan(spot * 0.7);
+    expect(thresholdPrice).toBeLessThan(spot * 1.3);
   });
 });

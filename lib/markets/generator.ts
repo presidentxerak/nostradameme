@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomBytes } from "crypto";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { getSpotPrice, getVolatilityPct } from "@/lib/coingecko/service";
 import { generateThreshold } from "@/lib/markets/thresholds";
@@ -85,7 +86,7 @@ export async function generateHourlyMarket(
     throw new AppError("already_exists", "Market already exists for this slot", 409);
   }
 
-  const duration = pickDuration(Math.random());
+  const duration = pickDuration(randomBytes(4).readUInt32BE(0) / 0xffffffff);
   const endAt = new Date(startAt.getTime() + DURATION_MS[duration]);
 
   const { data: runRow } = await admin

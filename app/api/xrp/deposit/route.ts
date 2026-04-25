@@ -10,8 +10,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const BodySchema = z.object({
-  xrpAmount: z.number().positive(),
-  xrpAddress: z.string().min(20).startsWith("r"),
+  xrpAmount: z.number().positive().max(100000),
+  xrpAddress: z.string().min(25).max(50).startsWith("r"),
 });
 
 export async function POST(req: Request) {
@@ -40,6 +40,16 @@ export async function POST(req: Request) {
     }
     const { xrpAmount, xrpAddress } = parsed.data;
 
+    const { data: recentCount } = await admin
+      .from("xrp_deposit_intents")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", profileId)
+      .eq("status", "pending")
+      .gte("created_at", new Date(Date.now() - 10 * 60 * 1000).toISOString());
+    if ((recentCount as unknown as number) >= 3) {
+      throw new AppError("too_many_pending", "Too many pending deposits. Wait for confirmation.", 429);
+    }
+
     const xrpPrice = (await getSpotPrice("ripple")) ?? 0;
     const usdAmount = xrpAmount * xrpPrice;
 
@@ -56,44 +66,20 @@ export async function POST(req: Request) {
         expected_xrp: xrpAmount,
         xrp_price_usd: xrpPrice,
         usd_amount: usdAmount,
-        status: "confirmed",
-        credited_at: new Date().toISOString(),
+        status: "pending",
       })
       .select("id")
       .single();
 
     if (error || !intentRaw) {
-      throw new AppError(
-        "intent_insert_failed",
-        error?.message ?? "Failed to create deposit intent",
-        500,
-      );
+      throw new AppError("intent_insert_failed", error?.message ?? "Failed", 500);
     }
-
-    const intentId = (intentRaw as { id: string }).id;
-
-    const { data: balRow } = await admin
-      .from("user_balance")
-      .select("balance")
-      .eq("user_id", profileId)
-      .maybeSingle();
-    const prevBalance = Number((balRow as { balance?: number } | null)?.balance ?? 0);
-
-    await admin.from("internal_wallet_ledger").insert({
-      user_id: profileId,
-      entry_type: "xrp_deposit",
-      amount: usdAmount,
-      reference_type: "xrp_deposit_intent",
-      reference_id: intentId,
-      balance_after: prevBalance + usdAmount,
-    });
 
     return NextResponse.json({
       ok: true,
-      intentId,
-      credited: true,
-      usdAmount,
-      newBalance: prevBalance + usdAmount,
+      intentId: (intentRaw as { id: string }).id,
+      usdEstimate: usdAmount,
+      message: "Deposit registered. Your balance will update once the payment is confirmed on-chain (usually under 1 minute).",
     });
   } catch (err) {
     return handleApiError(err);
