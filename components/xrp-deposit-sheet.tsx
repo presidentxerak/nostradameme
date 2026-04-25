@@ -128,7 +128,7 @@ export function XrpDepositSheet({ open, onOpenChange, onComplete }: XrpDepositSh
             </SheetDescription>
 
             <div className="flex flex-col gap-3">
-              {manager?.adapters.map((adapter: { name: string; icon?: string }) => (
+              {manager?.adapters.map((adapter) => (
                 <button
                   key={adapter.name}
                   onClick={async () => {
