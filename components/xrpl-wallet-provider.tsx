@@ -57,14 +57,16 @@ export function XrplWalletProvider({ children }: { children: ReactNode }) {
         const mod = await import("xrpl-connect");
         if (cancelled) return;
 
-        const { WalletManager, CrossmarkAdapter, GemWalletAdapter, XamanAdapter } = mod;
+        const { WalletManager, GemWalletAdapter, XamanAdapter } = mod;
 
-        const adapters: unknown[] = [
-          new CrossmarkAdapter(),
-          new GemWalletAdapter(),
-        ];
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        const adapters: unknown[] = [];
         if (XAMAN_API_KEY) {
-          adapters.unshift(new XamanAdapter({ apiKey: XAMAN_API_KEY }));
+          adapters.push(new XamanAdapter({ apiKey: XAMAN_API_KEY }));
+        }
+        if (!isMobile) {
+          adapters.push(new GemWalletAdapter());
         }
 
         const manager = new WalletManager({
