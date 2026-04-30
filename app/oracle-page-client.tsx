@@ -194,7 +194,7 @@ export function OraclePageClient(props: OraclePageClientProps) {
 
       {/* Main content — video + overlapping card */}
       <main className="flex-1 overflow-y-auto pb-20">
-        <div className="mx-auto flex max-w-lg flex-col items-center">
+        <div className="mx-auto flex w-full flex-col items-center">
           {/* Oracle video + quote overlay */}
           <div className="w-full relative">
             <OracleVideo

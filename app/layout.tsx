@@ -69,8 +69,8 @@ export default function RootLayout({
           />
           <div className="absolute inset-0 bg-black/60" />
         </div>
-        {/* App content above the background */}
-        <div className="relative z-10">
+        {/* App content above the background — constrained to a centered phone-like frame on desktop */}
+        <div className="relative z-10 mx-auto flex min-h-screen max-w-lg flex-col border-x border-border/20 shadow-[0_0_60px_rgba(0,0,0,0.6)]">
           <Providers>
             <SolanaProvider>
               <XrplWalletProvider>{children}</XrplWalletProvider>

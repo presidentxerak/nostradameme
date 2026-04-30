@@ -63,7 +63,7 @@ const NAV_ITEMS: { key: NavPage; href: string; label: string; icon: React.ReactN
 export function BottomNav({ active }: BottomNavProps) {
   return (
     <nav className="z-50 shrink-0 border-t border-border/40 bg-background/95 backdrop-blur-md safe-bottom">
-      <div className="mx-auto flex max-w-lg items-center justify-around py-2">
+      <div className="mx-auto flex w-full items-center justify-around py-2">
         {NAV_ITEMS.map((item) => {
           const isActive = active === item.key;
           return (
