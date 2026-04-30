@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { handleApiError } from "@/lib/auth/guards";
+import { enforceRateLimit } from "@/lib/auth/rate-limit";
 import { verifyPrivyAccessToken } from "@/lib/privy/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { sendSol } from "@/lib/solana/client";
@@ -35,6 +36,13 @@ export async function POST(req: Request) {
       throw new AppError("no_profile", "Profile not found", 404);
     }
     const userId = (profileRaw as { id: string }).id;
+
+    // Hard rate limit: max 3 withdrawals per user per hour.
+    await enforceRateLimit({
+      key: `sol:withdraw:user:${userId}`,
+      max: 3,
+      windowSeconds: 3600,
+    });
 
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) {

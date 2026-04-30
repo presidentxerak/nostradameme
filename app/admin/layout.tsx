@@ -12,11 +12,16 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   // Server-side gate: requires the Privy access-token cookie set by
-  // /api/auth/sync. If missing or non-admin, redirect away before any
-  // admin data renders. Client-side AdminGate provides UX feedback while
-  // the cookie is being set on first render after sign-in.
+  // /api/auth/sync. If missing, redirect to home with `?next=` so AuthSync
+  // can bring the user back here once the cookie is posted. If present
+  // but non-admin, redirect to home plainly.
   const user = await getServerPrivyUser();
-  if (!user || user.role !== "admin") {
+  if (!user) {
+    // Redirect to home with `next=/admin` so AuthSync forwards the user back
+    // here as soon as the Privy cookie is posted.
+    redirect(`/?next=${encodeURIComponent("/admin")}`);
+  }
+  if (user.role !== "admin") {
     redirect("/");
   }
   return (

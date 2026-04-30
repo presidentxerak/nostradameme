@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleApiError, requirePrivyUser } from "@/lib/auth/guards";
+import { enforceRateLimit } from "@/lib/auth/rate-limit";
 import { createPosition } from "@/lib/services/positions";
 import { AppError } from "@/lib/utils/errors";
 
@@ -16,6 +17,11 @@ const BodySchema = z.object({
 export async function POST(req: Request) {
   try {
     const user = await requirePrivyUser(req);
+    await enforceRateLimit({
+      key: `positions:create:user:${user.id}`,
+      max: 10,
+      windowSeconds: 60,
+    });
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) {
       throw new AppError("bad_request", parsed.error.message, 400);

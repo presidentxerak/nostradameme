@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleApiError, requireUserFromRequest } from "@/lib/auth/guards";
+import { enforceRateLimit } from "@/lib/auth/rate-limit";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import {
   buildTransakWidgetUrl,
@@ -21,6 +22,11 @@ const BodySchema = z.object({
 export async function POST(req: Request) {
   try {
     const user = await requireUserFromRequest(req);
+    await enforceRateLimit({
+      key: `deposits:create-intent:user:${user.id}`,
+      max: 5,
+      windowSeconds: 60,
+    });
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) {
       throw new AppError("bad_request", parsed.error.message, 400);

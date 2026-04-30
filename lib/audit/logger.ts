@@ -19,19 +19,3 @@ export async function logAdminAction(args: {
   });
 }
 
-export async function logGeoAccess(args: {
-  userId?: string | null;
-  countryCode: string | null;
-  path: string;
-  allowed: boolean;
-  reason: string;
-}): Promise<void> {
-  const admin = getAdminSupabase();
-  await admin.from("geo_access_logs").insert({
-    user_id: args.userId ?? null,
-    country_code: args.countryCode,
-    path: args.path,
-    allowed: args.allowed,
-    reason: args.reason,
-  });
-}

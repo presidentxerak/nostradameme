@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleApiError } from "@/lib/auth/guards";
+import { enforceRateLimit } from "@/lib/auth/rate-limit";
 import { verifyPrivyAccessToken } from "@/lib/privy/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { AppError } from "@/lib/utils/errors";
@@ -37,6 +38,13 @@ export async function POST(req: Request) {
     }
     const profile = profileRaw as { id: string; solana_address: string | null };
     const profileId = profile.id;
+
+    // Cap deposit-claim attempts to mitigate front-running spam.
+    await enforceRateLimit({
+      key: `sol:deposit:user:${profileId}`,
+      max: 10,
+      windowSeconds: 60,
+    });
 
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) {
@@ -100,11 +108,18 @@ export async function POST(req: Request) {
     const usdAmount = verifiedSol * solPrice;
 
     // Lock the sender address to this profile on first successful deposit.
+    // The `.is("solana_address", null)` filter makes this atomic: only the
+    // first concurrent request whose snapshot saw a null address updates,
+    // others are no-ops.
     if (!profile.solana_address) {
       await admin
         .from("profiles")
-        .update({ solana_address: solAddress, updated_at: new Date().toISOString() })
-        .eq("id", profileId);
+        .update({
+          solana_address: solAddress,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", profileId)
+        .is("solana_address", null);
     }
 
     await admin.from("sol_deposit_intents").insert({

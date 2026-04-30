@@ -3,6 +3,7 @@ import "server-only";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { sendPushToUser, pushConfigured } from "@/lib/notifications/push";
 import { sendEmail } from "@/lib/notifications/resend";
+import { getUserEmail } from "@/lib/privy/server";
 import { slotStartUtc } from "@/lib/utils/dates";
 import { COPY } from "@/lib/config/copy";
 import { env } from "@/lib/config/env";
@@ -194,14 +195,15 @@ async function sendSlotEmail(
   const admin = getAdminSupabase();
   const { data: profileRaw } = await admin
     .from("profiles")
-    .select("id, display_name")
+    .select("id, display_name, privy_user_id")
     .eq("id", userId)
     .maybeSingle();
-  const profile = profileRaw as Pick<ProfileRow, "id" | "display_name"> | null;
-  if (!profile) return false;
+  const profile = profileRaw as
+    | Pick<ProfileRow, "id" | "display_name" | "privy_user_id">
+    | null;
+  if (!profile?.privy_user_id) return false;
 
-  const { data: auth } = await admin.auth.admin.getUserById(userId);
-  const email = auth?.user?.email;
+  const email = await getUserEmail(profile.privy_user_id);
   if (!email) return false;
 
   const meta = COPY.slots[slot];

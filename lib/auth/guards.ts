@@ -2,7 +2,7 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 import { AppError, errorResponse } from "@/lib/utils/errors";
-import { getSessionUser, isAdmin, type SessionUser } from "@/lib/auth/session";
+import { isAdmin, type SessionUser } from "@/lib/auth/session";
 import { verifyPrivyAccessToken } from "@/lib/privy/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { env } from "@/lib/config/env";
@@ -12,6 +12,10 @@ export interface PrivyUser {
   privyUserId: string;
 }
 
+/**
+ * Bearer-token Privy auth for API routes. Verifies the token with Privy and
+ * resolves the corresponding profile.
+ */
 export async function requirePrivyUser(req: Request): Promise<PrivyUser> {
   const authHeader = req.headers.get("authorization") ?? "";
   const token = authHeader.replace(/^Bearer\s+/i, "");
@@ -37,41 +41,15 @@ export async function requirePrivyUser(req: Request): Promise<PrivyUser> {
   };
 }
 
-export async function requireUser(): Promise<SessionUser> {
-  const user = await getSessionUser();
-  if (!user) {
-    throw new AppError("not_authed", "Please sign in", 401);
-  }
-  return user;
-}
-
-/**
- * Privy-backed user requirement for API routes. Reads the bearer token,
- * verifies it with Privy, and resolves the corresponding profile.
- * Use this in place of `requireUser` for API routes that the client calls
- * with a Privy access token.
- */
 export async function requireUserFromRequest(req: Request): Promise<SessionUser> {
   const u = await requirePrivyUser(req);
   return { id: u.id, email: null };
 }
 
-export async function requireAdmin(): Promise<SessionUser> {
-  const user = await requireUser();
-  const admin = await isAdmin(user.id);
-  if (!admin) {
-    throw new AppError("forbidden", "Admin access required", 403);
-  }
-  return user;
-}
-
-/**
- * Privy-backed admin requirement for API routes.
- */
 export async function requireAdminFromRequest(req: Request): Promise<SessionUser> {
   const user = await requireUserFromRequest(req);
-  const admin = await isAdmin(user.id);
-  if (!admin) {
+  const isUserAdmin = await isAdmin(user.id);
+  if (!isUserAdmin) {
     throw new AppError("forbidden", "Admin access required", 403);
   }
   return user;
@@ -80,7 +58,7 @@ export async function requireAdminFromRequest(req: Request): Promise<SessionUser
 export function requireCronAuth(req: Request): void {
   const header = req.headers.get("authorization") ?? "";
   const token = header.replace(/^Bearer\s+/i, "");
-  if (token !== env.CRON_SECRET) {
+  if (!env.CRON_SECRET || token !== env.CRON_SECRET) {
     throw new AppError("forbidden", "Invalid cron credentials", 403);
   }
 }

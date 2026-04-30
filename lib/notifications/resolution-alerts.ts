@@ -3,6 +3,7 @@ import "server-only";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { sendPushToUser } from "@/lib/notifications/push";
 import { sendEmail, buildResolutionEmail } from "@/lib/notifications/resend";
+import { getUserEmail } from "@/lib/privy/server";
 import { formatUsd } from "@/lib/utils/currency";
 import { env } from "@/lib/config/env";
 import type { MarketRow, ProfileRow } from "@/types/db";
@@ -89,22 +90,13 @@ export async function notifyResolutionResults(
     }
 
     try {
-      const { data: privyUser } = await admin
-        .from("profiles")
-        .select("privy_user_id")
-        .eq("id", pos.userId)
-        .maybeSingle();
-      const privyId = (privyUser as { privy_user_id?: string } | null)?.privy_user_id;
+      const privyId = profile?.privy_user_id ?? null;
       if (!privyId) {
         result.skipped++;
         continue;
       }
 
-      const { data: emailData } = await admin
-        .rpc("get_user_email_by_privy_id", { p_privy_id: privyId })
-        .maybeSingle();
-
-      const email = (emailData as { email?: string } | null)?.email;
+      const email = await getUserEmail(privyId);
       if (!email) {
         result.skipped++;
         continue;

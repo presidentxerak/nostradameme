@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useCallback } from "react";
+import { createContext, useContext, useEffect, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
 import { PRIVY_CONFIG } from "@/lib/privy/config";
 
@@ -25,6 +26,9 @@ function isValidPrivyAppId(id: string): boolean {
 
 function AuthSync({ children }: { children: React.ReactNode }) {
   const { authenticated, ready, getAccessToken } = usePrivy();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const syncedRef = useRef(false);
 
   const getToken = useCallback(async (): Promise<string | null> => {
     try {
@@ -38,19 +42,34 @@ function AuthSync({ children }: { children: React.ReactNode }) {
     try {
       const token = await getToken();
       if (!token) return;
-      await fetch("/api/auth/sync", {
+      const res = await fetch("/api/auth/sync", {
         method: "POST",
         headers: { authorization: `Bearer ${token}` },
       });
+      if (!res.ok) return;
+
+      // After the cookie is posted, redirect to the originally-requested page
+      // if any (used by admin SSR redirect when there was no cookie yet),
+      // otherwise refresh the current route so SSR picks up the new session.
+      const next = searchParams?.get("next");
+      if (next && next.startsWith("/") && !next.startsWith("//")) {
+        router.replace(next);
+      } else {
+        router.refresh();
+      }
     } catch {
       // will retry next load
     }
-  }, [getToken]);
+  }, [getToken, router, searchParams]);
 
   useEffect(() => {
-    if (ready && authenticated) {
-      void syncProfile();
+    if (!ready || !authenticated) {
+      syncedRef.current = false;
+      return;
     }
+    if (syncedRef.current) return;
+    syncedRef.current = true;
+    void syncProfile();
   }, [ready, authenticated, syncProfile]);
 
   return (

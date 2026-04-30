@@ -26,40 +26,6 @@ function isCountryBlocked(req: NextRequest): boolean {
   return BLOCKED_COUNTRY_LIST.includes(country);
 }
 
-const RATE_LIMIT_WINDOW = 60 * 1000;
-const RATE_LIMITS: Record<string, number> = {
-  "/api/positions/create": 10,
-  "/api/sol/deposit": 5,
-  "/api/xrp/deposit": 5,
-  "/api/deposits/create-intent": 5,
-  "/api/me": 20,
-  "/api/auth/sync": 10,
-  "/api/push/subscribe": 10,
-  "/api/push/unsubscribe": 10,
-};
-const DEFAULT_RATE_LIMIT = 60;
-
-const ipCounts = new Map<string, { count: number; resetAt: number }>();
-
-function getRateLimit(pathname: string): number {
-  for (const [prefix, limit] of Object.entries(RATE_LIMITS)) {
-    if (pathname.startsWith(prefix)) return limit;
-  }
-  return DEFAULT_RATE_LIMIT;
-}
-
-function checkRateLimit(ip: string, pathname: string): boolean {
-  const key = `${ip}:${pathname}`;
-  const now = Date.now();
-  const entry = ipCounts.get(key);
-  if (!entry || now > entry.resetAt) {
-    ipCounts.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
-    return true;
-  }
-  entry.count++;
-  return entry.count <= getRateLimit(pathname);
-}
-
 const SECURITY_HEADERS = {
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
@@ -77,9 +43,8 @@ const ALLOWED_ORIGINS = new Set([
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Geo-gating: block disallowed countries from accessing the app and from
-  // making real-money API calls. Always allow the /blocked page itself,
-  // /api/health (for monitoring), and static-like assets.
+  // Geo-gating: block disallowed countries. Exempt the /blocked page itself,
+  // /api/health, /_next assets, and crons (Vercel cron has no geo header).
   const geoExempt =
     pathname.startsWith("/blocked") ||
     pathname === "/api/health" ||
@@ -97,26 +62,24 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Per-route rate limiting is enforced inside Node.js API handlers via
+  // lib/auth/rate-limit.ts (Postgres-backed). The middleware runs on the
+  // edge runtime which can't access our service-role Supabase client, so
+  // it stays focused on geo + headers.
   if (pathname.startsWith("/api/")) {
-    const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      req.headers.get("x-real-ip") ??
-      "unknown";
-
-    if (!pathname.startsWith("/api/cron/") && !checkRateLimit(ip, pathname)) {
-      return NextResponse.json(
-        { error: { code: "rate_limited", message: "Too many requests" } },
-        { status: 429, headers: { "Retry-After": "60" } },
-      );
-    }
-
     const origin = req.headers.get("origin") ?? "";
     const response = NextResponse.next();
 
     if (ALLOWED_ORIGINS.has(origin) || origin.endsWith(".vercel.app")) {
       response.headers.set("Access-Control-Allow-Origin", origin);
-      response.headers.set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
-      response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+      response.headers.set(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PATCH, DELETE, OPTIONS",
+      );
+      response.headers.set(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization",
+      );
       response.headers.set("Access-Control-Max-Age", "86400");
     }
 

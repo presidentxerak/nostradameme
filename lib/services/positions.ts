@@ -3,11 +3,7 @@ import "server-only";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { AppError } from "@/lib/utils/errors";
 import { XRPL_CONFIG } from "@/lib/config/xrpl";
-import type { MarketRow, PositionRow } from "@/types/db";
 import type { BetRequest, BetResult } from "@/types/app";
-import { msUntil } from "@/lib/utils/dates";
-
-const BETTING_BUFFER_MS = 3000;
 
 export async function getUserBalance(userId: string): Promise<number> {
   const admin = getAdminSupabase();
@@ -19,11 +15,32 @@ export async function getUserBalance(userId: string): Promise<number> {
   return Number((data as { balance?: number } | null)?.balance ?? 0);
 }
 
+interface PlaceBetRow {
+  position_id: string;
+  new_balance: number | string;
+}
+
+const PG_ERROR_TO_APP: Record<string, { code: string; message: string; status: number }> = {
+  P0001: { code: "bad_amount", message: "Minimum bet is $1", status: 400 },
+  P0002: { code: "insufficient_balance", message: "Not enough funds", status: 402 },
+  P0003: { code: "market_not_found", message: "Market not found", status: 404 },
+  P0004: { code: "market_not_open", message: "Prophecy is not open", status: 400 },
+  P0005: {
+    code: "market_locked",
+    message: "Betting is closing. Try the next prediction.",
+    status: 400,
+  },
+  P0006: {
+    code: "already_bet",
+    message: "You already predicted on this prophecy",
+    status: 409,
+  },
+};
+
 export async function createPosition(
   userId: string,
   req: BetRequest,
 ): Promise<BetResult> {
-  const admin = getAdminSupabase();
   const amount = Number(req.amount);
   if (!Number.isFinite(amount) || amount < XRPL_CONFIG.MIN_BET_USD) {
     throw new AppError("bad_amount", "Minimum bet is $1", 400);
@@ -33,90 +50,31 @@ export async function createPosition(
   }
   const roundedAmount = Math.round(amount * 100) / 100;
 
-  const { data: marketRaw, error } = await admin
-    .from("markets")
-    .select("*")
-    .eq("id", req.marketId)
-    .maybeSingle();
-  if (error || !marketRaw) {
-    throw new AppError("market_not_found", "Market not found", 404);
-  }
-  const market = marketRaw as MarketRow;
-  if (market.status !== "open") {
-    throw new AppError("market_not_open", "Prophecy is not open", 400);
-  }
-  const bettingEnd = market.betting_end_at ?? market.end_at;
-  if (msUntil(bettingEnd) <= BETTING_BUFFER_MS) {
-    throw new AppError("market_locked", "Betting is closing. Try the next prediction.", 400);
-  }
-
-  const { data: existing } = await admin
-    .from("positions")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("market_id", req.marketId)
-    .maybeSingle();
-  if (existing) {
-    throw new AppError("already_bet", "You already predicted on this prophecy", 409);
-  }
-
-  const balance = await getUserBalance(userId);
-  if (balance < roundedAmount) {
-    throw new AppError("insufficient_balance", "Not enough funds", 402);
-  }
-
-  const newBalance = Math.round((balance - roundedAmount) * 100) / 100;
-
-  const { data: ledgerRow, error: ledgerErr } = await admin
-    .from("internal_wallet_ledger")
-    .insert({
-      user_id: userId,
-      entry_type: "bet",
-      amount: -roundedAmount,
-      reference_type: "position_pending",
-      reference_id: req.marketId,
-      balance_after: newBalance,
+  const admin = getAdminSupabase();
+  const { data, error } = await admin
+    .rpc("place_bet", {
+      p_user_id: userId,
+      p_market_id: req.marketId,
+      p_side: req.side,
+      p_amount: roundedAmount,
     })
-    .select("id")
     .single();
-  if (ledgerErr || !ledgerRow) {
-    throw new AppError("ledger_failed", "Balance update failed", 500);
+
+  if (error) {
+    // Map Postgres exception SQLSTATE codes to our AppError taxonomy.
+    const sqlstate = (error as { code?: string }).code ?? "";
+    const mapped = PG_ERROR_TO_APP[sqlstate];
+    if (mapped) {
+      throw new AppError(mapped.code, mapped.message, mapped.status);
+    }
+    throw new AppError("position_insert_failed", error.message, 500);
   }
-
-  const balanceAfterDeduct = await getUserBalance(userId);
-  if (balanceAfterDeduct < 0) {
-    await admin
-      .from("internal_wallet_ledger")
-      .delete()
-      .eq("id", (ledgerRow as { id: string }).id);
-    throw new AppError("insufficient_balance", "Not enough funds (concurrent request)", 402);
+  if (!data) {
+    throw new AppError("position_insert_failed", "No row returned", 500);
   }
-
-  const { data: positionRaw, error: insertErr } = await admin
-    .from("positions")
-    .insert({
-      user_id: userId,
-      market_id: req.marketId,
-      side: req.side,
-      amount: roundedAmount,
-      funded: true,
-      funded_at: new Date().toISOString(),
-    })
-    .select("*")
-    .single();
-  if (insertErr || !positionRaw) {
-    await admin
-      .from("internal_wallet_ledger")
-      .delete()
-      .eq("id", (ledgerRow as { id: string }).id);
-    throw new AppError("position_insert_failed", insertErr?.message ?? "Failed", 500);
-  }
-  const position = positionRaw as PositionRow;
-
-  await admin
-    .from("internal_wallet_ledger")
-    .update({ reference_type: "position", reference_id: position.id })
-    .eq("id", (ledgerRow as { id: string }).id);
-
-  return { positionId: position.id, newBalance };
+  const row = data as PlaceBetRow;
+  return {
+    positionId: row.position_id,
+    newBalance: Number(row.new_balance),
+  };
 }

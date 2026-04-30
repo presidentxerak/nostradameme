@@ -84,6 +84,30 @@ export async function getUserXrplAddress(
   }
 }
 
+/**
+ * Looks up the user's email from their Privy linked accounts.
+ * Returns null if the user has no email-typed account or Privy is unreachable.
+ */
+export async function getUserEmail(
+  privyUserId: string,
+): Promise<string | null> {
+  const client = getPrivy();
+  try {
+    const user = await client.getUserById(privyUserId);
+    if (!user) return null;
+    const accounts = (user.linkedAccounts ?? []) as Array<{
+      type: string;
+      address?: string;
+    }>;
+    const match = accounts.find(
+      (a) => a.type === "email" && typeof a.address === "string" && a.address.length > 0,
+    );
+    return match?.address ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function verifyPrivyAccessToken(token: string): Promise<{
   userId: string;
 } | null> {

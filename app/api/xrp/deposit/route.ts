@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleApiError } from "@/lib/auth/guards";
+import { enforceRateLimit } from "@/lib/auth/rate-limit";
 import { verifyPrivyAccessToken } from "@/lib/privy/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { AppError } from "@/lib/utils/errors";
@@ -26,13 +27,20 @@ export async function POST(req: Request) {
     const admin = getAdminSupabase();
     const { data: profileRaw } = await admin
       .from("profiles")
-      .select("id")
+      .select("id, xrpl_address")
       .eq("privy_user_id", verified.userId)
       .maybeSingle();
     if (!profileRaw) {
       throw new AppError("no_profile", "Profile not found", 404);
     }
-    const profileId = (profileRaw as { id: string }).id;
+    const profile = profileRaw as { id: string; xrpl_address: string | null };
+    const profileId = profile.id;
+
+    await enforceRateLimit({
+      key: `xrp:deposit:user:${profileId}`,
+      max: 10,
+      windowSeconds: 60,
+    });
 
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) {
@@ -40,23 +48,60 @@ export async function POST(req: Request) {
     }
     const { xrpAmount, xrpAddress } = parsed.data;
 
-    const { data: recentCount } = await admin
+    // Reject claims for an address already linked to another profile.
+    const { data: claimedRaw } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("xrpl_address", xrpAddress)
+      .neq("id", profileId)
+      .maybeSingle();
+    if (claimedRaw) {
+      throw new AppError(
+        "address_already_linked",
+        "This XRPL address is already linked to another account",
+        409,
+      );
+    }
+
+    // If profile already has a linked XRPL address, reject mismatched senders.
+    if (profile.xrpl_address && profile.xrpl_address !== xrpAddress) {
+      throw new AppError(
+        "address_mismatch",
+        "Deposit must come from your linked XRPL address",
+        403,
+      );
+    }
+
+    // Per-user rate limit: max 3 pending deposits in the last 10 minutes.
+    const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { count: pendingCount } = await admin
       .from("xrp_deposit_intents")
       .select("id", { count: "exact", head: true })
       .eq("user_id", profileId)
       .eq("status", "pending")
-      .gte("created_at", new Date(Date.now() - 10 * 60 * 1000).toISOString());
-    if ((recentCount as unknown as number) >= 3) {
-      throw new AppError("too_many_pending", "Too many pending deposits. Wait for confirmation.", 429);
+      .gte("created_at", since);
+    if ((pendingCount ?? 0) >= 3) {
+      throw new AppError(
+        "too_many_pending",
+        "Too many pending deposits. Wait for confirmation.",
+        429,
+      );
     }
 
     const xrpPrice = (await getSpotPrice("ripple")) ?? 0;
     const usdAmount = xrpAmount * xrpPrice;
 
-    await admin
-      .from("profiles")
-      .update({ xrpl_address: xrpAddress, updated_at: new Date().toISOString() })
-      .eq("id", profileId);
+    // Lock the address on first deposit (atomic on null → only first wins).
+    if (!profile.xrpl_address) {
+      await admin
+        .from("profiles")
+        .update({
+          xrpl_address: xrpAddress,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", profileId)
+        .is("xrpl_address", null);
+    }
 
     const { data: intentRaw, error } = await admin
       .from("xrp_deposit_intents")
@@ -79,7 +124,8 @@ export async function POST(req: Request) {
       ok: true,
       intentId: (intentRaw as { id: string }).id,
       usdEstimate: usdAmount,
-      message: "Deposit registered. Your balance will update once the payment is confirmed on-chain (usually under 1 minute).",
+      message:
+        "Deposit registered. Your balance will update once the payment is confirmed on-chain (usually under 1 minute).",
     });
   } catch (err) {
     return handleApiError(err);

@@ -66,28 +66,58 @@ export function parseWebhookPayload(
 }
 
 /**
- * Verifies a Transak webhook HMAC signature.
- * Transak signs the raw request body with the partner's API secret using
- * HMAC-SHA256, hex-encoded, sent in the `X-Transak-Signature` (or
- * `transak-signature`) header.
+ * Verifies a Transak webhook signature.
+ *
+ * Transak signs webhooks with HS256 JWT using the partner's API secret.
+ * The webhook body is `{ data: "<jwt-string>" }` and the JWT payload contains
+ * the actual order event. We verify the JWT signature, decode the payload,
+ * and return it (or null on failure).
  */
-export function verifyTransakSignature(
-  rawBody: string,
-  signatureHeader: string | null,
-): boolean {
-  if (!env.TRANSAK_SECRET_KEY) return false;
-  if (!signatureHeader) return false;
-  const expected = createHmac("sha256", env.TRANSAK_SECRET_KEY)
-    .update(rawBody)
-    .digest("hex");
-  const provided = signatureHeader.trim().toLowerCase();
-  if (provided.length !== expected.length) return false;
+export interface VerifiedTransakBody {
+  payload: unknown;
+}
+
+function base64UrlDecode(s: string): Buffer {
+  const pad = (4 - (s.length % 4)) % 4;
+  const b64 = (s + "=".repeat(pad)).replace(/-/g, "+").replace(/_/g, "/");
+  return Buffer.from(b64, "base64");
+}
+
+export function verifyTransakJwt(token: string): unknown | null {
+  if (!env.TRANSAK_SECRET_KEY) return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const [headerB64, payloadB64, sigB64] = parts as [string, string, string];
+
+  let header: { alg?: string; typ?: string };
   try {
-    return timingSafeEqual(
-      Buffer.from(expected, "utf8"),
-      Buffer.from(provided, "utf8"),
-    );
+    header = JSON.parse(base64UrlDecode(headerB64).toString("utf8"));
   } catch {
-    return false;
+    return null;
+  }
+  if (header.alg !== "HS256") return null;
+
+  const expected = createHmac("sha256", env.TRANSAK_SECRET_KEY)
+    .update(`${headerB64}.${payloadB64}`)
+    .digest();
+  let provided: Buffer;
+  try {
+    provided = base64UrlDecode(sigB64);
+  } catch {
+    return null;
+  }
+  if (provided.length !== expected.length) return false ? false : null;
+  let ok = false;
+  try {
+    ok = timingSafeEqual(expected, provided);
+  } catch {
+    ok = false;
+  }
+  if (!ok) return null;
+
+  try {
+    return JSON.parse(base64UrlDecode(payloadB64).toString("utf8"));
+  } catch {
+    return null;
   }
 }
