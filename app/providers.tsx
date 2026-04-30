@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useCallback, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
 import { PRIVY_CONFIG } from "@/lib/privy/config";
 
@@ -27,7 +27,6 @@ function isValidPrivyAppId(id: string): boolean {
 function AuthSync({ children }: { children: React.ReactNode }) {
   const { authenticated, ready, getAccessToken } = usePrivy();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const syncedRef = useRef(false);
 
   const getToken = useCallback(async (): Promise<string | null> => {
@@ -49,9 +48,16 @@ function AuthSync({ children }: { children: React.ReactNode }) {
       if (!res.ok) return;
 
       // After the cookie is posted, redirect to the originally-requested page
-      // if any (used by admin SSR redirect when there was no cookie yet),
-      // otherwise refresh the current route so SSR picks up the new session.
-      const next = searchParams?.get("next");
+      // if `?next=` is on the URL (used by admin SSR redirect when there was
+      // no cookie yet), otherwise refresh so SSR picks up the new session.
+      // We read the URL via window.location instead of useSearchParams() so
+      // this component doesn't force a Suspense boundary on every layout
+      // (which would break static prerendering of /contact, /privacy, etc.).
+      let next: string | null = null;
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        next = params.get("next");
+      }
       if (next && next.startsWith("/") && !next.startsWith("//")) {
         router.replace(next);
       } else {
@@ -60,7 +66,7 @@ function AuthSync({ children }: { children: React.ReactNode }) {
     } catch {
       // will retry next load
     }
-  }, [getToken, router, searchParams]);
+  }, [getToken, router]);
 
   useEffect(() => {
     if (!ready || !authenticated) {
