@@ -40,7 +40,11 @@ export function useXrplWallet() {
   return useContext(XrplWalletContext);
 }
 
+// Public env var, inlined by Next.js at build time. We read it lazily inside
+// the effect to avoid relying on the validated env module on the client.
 const XAMAN_API_KEY = process.env.NEXT_PUBLIC_XAMAN_API_KEY ?? "";
+// (This var is also declared in lib/config/env.ts so server-side code can
+// validate its presence; the client read happens here at build time.)
 
 export function XrplWalletProvider({ children }: { children: ReactNode }) {
   const [connected, setConnected] = useState(false);

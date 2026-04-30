@@ -59,10 +59,10 @@ export function SolDepositSheet({ open, onOpenChange, onComplete }: SolDepositSh
 
   useEffect(() => {
     if (!open) return;
-    fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd")
+    fetch("/api/prices?ids=solana")
       .then((r) => r.json())
-      .then((d: { solana?: { usd?: number } }) => {
-        if (d.solana?.usd) setSolPrice(d.solana.usd);
+      .then((d: { prices?: { solana?: number } }) => {
+        if (d.prices?.solana) setSolPrice(d.prices.solana);
       })
       .catch(() => undefined);
   }, [open]);

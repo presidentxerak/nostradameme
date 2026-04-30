@@ -45,8 +45,31 @@ export async function requireUser(): Promise<SessionUser> {
   return user;
 }
 
+/**
+ * Privy-backed user requirement for API routes. Reads the bearer token,
+ * verifies it with Privy, and resolves the corresponding profile.
+ * Use this in place of `requireUser` for API routes that the client calls
+ * with a Privy access token.
+ */
+export async function requireUserFromRequest(req: Request): Promise<SessionUser> {
+  const u = await requirePrivyUser(req);
+  return { id: u.id, email: null };
+}
+
 export async function requireAdmin(): Promise<SessionUser> {
   const user = await requireUser();
+  const admin = await isAdmin(user.id);
+  if (!admin) {
+    throw new AppError("forbidden", "Admin access required", 403);
+  }
+  return user;
+}
+
+/**
+ * Privy-backed admin requirement for API routes.
+ */
+export async function requireAdminFromRequest(req: Request): Promise<SessionUser> {
+  const user = await requireUserFromRequest(req);
   const admin = await isAdmin(user.id);
   if (!admin) {
     throw new AppError("forbidden", "Admin access required", 403);

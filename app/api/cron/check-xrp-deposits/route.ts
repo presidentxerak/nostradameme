@@ -14,3 +14,5 @@ export async function POST(req: Request) {
     return handleApiError(err);
   }
 }
+
+export const GET = POST;

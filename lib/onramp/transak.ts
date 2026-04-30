@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createHmac, timingSafeEqual } from "crypto";
 import { z } from "zod";
 import { env } from "@/lib/config/env";
 import { XRPL_CONFIG } from "@/lib/config/xrpl";
@@ -62,4 +63,31 @@ export function parseWebhookPayload(
   const parsed = TransakOrderEventSchema.safeParse(raw);
   if (!parsed.success) return null;
   return parsed.data;
+}
+
+/**
+ * Verifies a Transak webhook HMAC signature.
+ * Transak signs the raw request body with the partner's API secret using
+ * HMAC-SHA256, hex-encoded, sent in the `X-Transak-Signature` (or
+ * `transak-signature`) header.
+ */
+export function verifyTransakSignature(
+  rawBody: string,
+  signatureHeader: string | null,
+): boolean {
+  if (!env.TRANSAK_SECRET_KEY) return false;
+  if (!signatureHeader) return false;
+  const expected = createHmac("sha256", env.TRANSAK_SECRET_KEY)
+    .update(rawBody)
+    .digest("hex");
+  const provided = signatureHeader.trim().toLowerCase();
+  if (provided.length !== expected.length) return false;
+  try {
+    return timingSafeEqual(
+      Buffer.from(expected, "utf8"),
+      Buffer.from(provided, "utf8"),
+    );
+  } catch {
+    return false;
+  }
 }

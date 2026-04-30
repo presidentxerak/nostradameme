@@ -1,5 +1,31 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+const BLOCKED_COUNTRY_LIST = (process.env.BLOCKED_COUNTRIES ?? "")
+  .split(",")
+  .map((c) => c.trim().toUpperCase())
+  .filter(Boolean);
+
+const COUNTRY_HEADERS = [
+  "x-vercel-ip-country",
+  "cf-ipcountry",
+  "x-country-code",
+];
+
+function detectCountry(req: NextRequest): string | null {
+  for (const h of COUNTRY_HEADERS) {
+    const v = req.headers.get(h);
+    if (v && v.length === 2) return v.toUpperCase();
+  }
+  return null;
+}
+
+function isCountryBlocked(req: NextRequest): boolean {
+  if (BLOCKED_COUNTRY_LIST.length === 0) return false;
+  const country = detectCountry(req);
+  if (!country) return false;
+  return BLOCKED_COUNTRY_LIST.includes(country);
+}
+
 const RATE_LIMIT_WINDOW = 60 * 1000;
 const RATE_LIMITS: Record<string, number> = {
   "/api/positions/create": 10,
@@ -50,6 +76,26 @@ const ALLOWED_ORIGINS = new Set([
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Geo-gating: block disallowed countries from accessing the app and from
+  // making real-money API calls. Always allow the /blocked page itself,
+  // /api/health (for monitoring), and static-like assets.
+  const geoExempt =
+    pathname.startsWith("/blocked") ||
+    pathname === "/api/health" ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api/cron/");
+  if (!geoExempt && isCountryBlocked(req)) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json(
+        { error: { code: "blocked_country", message: "Service unavailable in your region" } },
+        { status: 451 },
+      );
+    }
+    const url = req.nextUrl.clone();
+    url.pathname = "/blocked";
+    return NextResponse.redirect(url);
+  }
 
   if (pathname.startsWith("/api/")) {
     const ip =

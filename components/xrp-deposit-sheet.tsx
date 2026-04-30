@@ -29,10 +29,10 @@ export function XrpDepositSheet({ open, onOpenChange, onComplete }: XrpDepositSh
     if (!open) return;
     setStatus("idle");
     setError(null);
-    fetch("https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd")
+    fetch("/api/prices?ids=ripple")
       .then((r) => r.json())
-      .then((d: { ripple?: { usd?: number } }) => {
-        if (d.ripple?.usd) setXrpPrice(d.ripple.usd);
+      .then((d: { prices?: { ripple?: number } }) => {
+        if (d.prices?.ripple) setXrpPrice(d.prices.ripple);
       })
       .catch(() => undefined);
   }, [open]);

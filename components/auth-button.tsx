@@ -20,12 +20,20 @@ function PrivyAuthButton() {
   }
 
   if (authenticated) {
+    const handleSignOut = async () => {
+      try {
+        await fetch("/api/auth/signout", { method: "POST" });
+      } catch {
+        // Best effort — clearing the cookie is the API's job.
+      }
+      await logout();
+    };
     return (
       <Button
         size="sm"
         variant="outline"
         className="h-8 px-3 text-xs"
-        onClick={() => void logout()}
+        onClick={() => void handleSignOut()}
       >
         {displayName ?? COPY.auth.signOut}
       </Button>

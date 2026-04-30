@@ -29,19 +29,47 @@ export async function POST(req: Request) {
     const admin = getAdminSupabase();
     const { data: profileRaw } = await admin
       .from("profiles")
-      .select("id")
+      .select("id, solana_address")
       .eq("privy_user_id", verified.userId)
       .maybeSingle();
     if (!profileRaw) {
       throw new AppError("no_profile", "Profile not found", 404);
     }
-    const profileId = (profileRaw as { id: string }).id;
+    const profile = profileRaw as { id: string; solana_address: string | null };
+    const profileId = profile.id;
 
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) {
       throw new AppError("bad_request", parsed.error.message, 400);
     }
     const { txSignature, solAmount, solAddress } = parsed.data;
+
+    // Ownership check: prevent another profile from claiming a deposit that
+    // originated from a wallet already linked to a different account.
+    const { data: claimedRaw } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("solana_address", solAddress)
+      .neq("id", profileId)
+      .maybeSingle();
+    if (claimedRaw) {
+      throw new AppError(
+        "address_already_linked",
+        "This Solana wallet is already linked to another account",
+        409,
+      );
+    }
+
+    // If the profile already has a linked Solana address, the deposit must
+    // come from that exact address. This prevents an attacker from racing
+    // a legitimate user's incoming tx with their own profile.
+    if (profile.solana_address && profile.solana_address !== solAddress) {
+      throw new AppError(
+        "address_mismatch",
+        "Deposit must come from your linked Solana wallet",
+        403,
+      );
+    }
 
     const { data: existing } = await admin
       .from("sol_deposit_intents")
@@ -71,10 +99,13 @@ export async function POST(req: Request) {
     const solPrice = (await getSpotPrice("solana")) ?? 0;
     const usdAmount = verifiedSol * solPrice;
 
-    await admin
-      .from("profiles")
-      .update({ solana_address: solAddress, updated_at: new Date().toISOString() })
-      .eq("id", profileId);
+    // Lock the sender address to this profile on first successful deposit.
+    if (!profile.solana_address) {
+      await admin
+        .from("profiles")
+        .update({ solana_address: solAddress, updated_at: new Date().toISOString() })
+        .eq("id", profileId);
+    }
 
     await admin.from("sol_deposit_intents").insert({
       user_id: profileId,

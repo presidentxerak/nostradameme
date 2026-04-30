@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { handleApiError, requireAdmin } from "@/lib/auth/guards";
+import { handleApiError, requireAdminFromRequest } from "@/lib/auth/guards";
 import {
   getAppSettings,
   updateAppSettings,
@@ -17,9 +17,9 @@ const PatchSchema = z.object({
   platform_fee_bps: z.number().int().min(0).max(5000).optional(),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    await requireAdmin();
+    await requireAdminFromRequest(req);
     const settings = await getAppSettings();
     return NextResponse.json(settings);
   } catch (err) {
@@ -29,7 +29,7 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireAdminFromRequest(req);
     const parsed = PatchSchema.safeParse(await req.json());
     if (!parsed.success) {
       throw new AppError("bad_request", parsed.error.message, 400);

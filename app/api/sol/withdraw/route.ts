@@ -13,8 +13,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const BodySchema = z.object({
-  usdAmount: z.number().positive().min(1),
-  solanaAddress: z.string().min(20),
+  usdAmount: z.number().positive().min(1).max(10000),
+  solanaAddress: z.string().min(20).max(60),
 });
 
 export async function POST(req: Request) {
@@ -58,17 +58,71 @@ export async function POST(req: Request) {
       throw new AppError("bad_amount", "Amount too small", 400);
     }
 
-    const signature = await sendSol(solanaAddress, lamports);
+    // Debit BEFORE sending on-chain so concurrent requests can't double-spend.
+    // The ledger row is the canonical record of intent; we update it after
+    // the on-chain transfer completes (or refund on failure).
+    const newBalance = Math.round((balance - usdAmount) * 100) / 100;
+    const { data: ledgerRow, error: ledgerErr } = await admin
+      .from("internal_wallet_ledger")
+      .insert({
+        user_id: userId,
+        entry_type: "sol_withdraw",
+        amount: -usdAmount,
+        reference_type: "sol_withdraw_pending",
+        reference_id: null,
+        balance_after: newBalance,
+      })
+      .select("id")
+      .single();
+    if (ledgerErr || !ledgerRow) {
+      throw new AppError(
+        "ledger_failed",
+        ledgerErr?.message ?? "Failed to debit balance",
+        500,
+      );
+    }
+    const ledgerId = (ledgerRow as { id: string }).id;
 
-    const newBalance = balance - usdAmount;
-    await admin.from("internal_wallet_ledger").insert({
-      user_id: userId,
-      entry_type: "sol_withdraw",
-      amount: -usdAmount,
-      reference_type: "sol_withdraw",
-      reference_id: null,
-      balance_after: newBalance,
-    });
+    // Re-check balance after the insert; if it went negative due to a
+    // concurrent debit, refund immediately.
+    const balanceAfterDebit = await getUserBalance(userId);
+    if (balanceAfterDebit < 0) {
+      await admin
+        .from("internal_wallet_ledger")
+        .delete()
+        .eq("id", ledgerId);
+      throw new AppError(
+        "insufficient_balance",
+        "Not enough balance (concurrent withdrawal)",
+        402,
+      );
+    }
+
+    let signature: string;
+    try {
+      signature = await sendSol(solanaAddress, lamports);
+    } catch (err) {
+      // On-chain transfer failed — refund the user.
+      const refundBalance = await getUserBalance(userId);
+      await admin.from("internal_wallet_ledger").insert({
+        user_id: userId,
+        entry_type: "refund",
+        amount: usdAmount,
+        reference_type: "sol_withdraw_failed",
+        reference_id: ledgerId,
+        balance_after: refundBalance + usdAmount,
+      });
+      throw err;
+    }
+
+    // Mark the original ledger row as confirmed with the on-chain signature.
+    await admin
+      .from("internal_wallet_ledger")
+      .update({
+        reference_type: "sol_withdraw",
+        reference_id: signature,
+      })
+      .eq("id", ledgerId);
 
     return NextResponse.json({
       signature,

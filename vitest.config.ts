@@ -10,6 +10,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./"),
+      // server-only throws when imported outside a Server Component context.
+      // In vitest we shim it to a no-op so lib/* code that imports it can be
+      // exercised by tests directly.
+      "server-only": path.resolve(__dirname, "./tests/_shims/server-only.ts"),
     },
   },
 });

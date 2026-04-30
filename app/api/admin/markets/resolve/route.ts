@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { handleApiError, requireAdmin } from "@/lib/auth/guards";
+import { handleApiError, requireAdminFromRequest } from "@/lib/auth/guards";
 import { resolveMarket } from "@/lib/markets/resolver";
 import { executePayouts } from "@/lib/payouts/executor";
 import { AppError } from "@/lib/utils/errors";
@@ -15,7 +15,7 @@ const BodySchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireAdminFromRequest(req);
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) {
       throw new AppError("bad_request", parsed.error.message, 400);

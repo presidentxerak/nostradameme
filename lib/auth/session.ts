@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getServerSupabase } from "@/lib/supabase/server";
+import { getServerPrivyUser } from "@/lib/auth/privy-cookie";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import type { ProfileRow } from "@/types/db";
 
@@ -10,12 +10,9 @@ export interface SessionUser {
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
-  const supa = await getServerSupabase();
-  const {
-    data: { user },
-  } = await supa.auth.getUser();
+  const user = await getServerPrivyUser();
   if (!user) return null;
-  return { id: user.id, email: user.email ?? null };
+  return { id: user.id, email: user.email };
 }
 
 export async function getSessionProfile(): Promise<{

@@ -1,16 +1,27 @@
 # Oracle Background Videos
 
-Ce dossier contient les 4 vidéos de fond de l'oracle.
-Chaque vidéo tourne en boucle derrière la carte de prophétie.
+Ce dossier contient les vidéos de fond de l'oracle.
+Chaque vidéo tourne en boucle derrière la carte de prophétie. Le composant
+`components/oracle-video.tsx` choisit la phase à afficher en fonction du
+cycle de vie du marché (3 minutes de fenêtre de pari).
 
-## Fichiers attendus
+## Fichiers utilisés par le code
 
-| Fichier | État du marché | Description | Quand joué |
+| Fichier | Phase | Description | Quand joué |
 |---|---|---|---|
-| `oracle-idle.mp4` | Stand-by | L'oracle attend, ambiance mystique calme. Orbe pulse doucement. La carte affiche la question + boutons YES/NO inactifs. | Aucun marché ouvert, ou utilisateur n'a pas encore parié |
-| `oracle-launch.mp4` | Lancement | L'oracle s'active, énergie qui monte, orbe s'illumine. La carte affiche la question + boutons YES/NO prêts. Transition dramatique. | Le marché vient d'ouvrir, ou l'utilisateur arrive sur la page |
-| `oracle-active.mp4` | Prédiction en cours | L'oracle vibre d'énergie, particules flottent, orbe tourne. La carte affiche la question + boutons YES/NO actifs avec le tug-of-war. | Marché ouvert, paris en cours |
-| `oracle-reveal.mp4` | Résultat | Flash dramatique, l'oracle lève les mains, révélation. La carte affiche le résultat (YES ou NO) avec effets de victoire/défaite. | Le marché vient d'être résolu |
+| `prediction-stand.mp4` | `stand` | L'oracle attend, ambiance mystique calme. | Aucun marché ouvert, ou les 30 premières secondes de la fenêtre de pari |
+| `prediction-start.mp4` | `start` | L'oracle s'active, énergie qui monte. | Phase principale de la fenêtre (entre 30s écoulées et 30s restantes) |
+| `prediction-ended.mp4` | `ended` | Flash dramatique, révélation. | Marché fermé / résolu, ou les 30 dernières secondes |
+
+Le mapping est défini dans `components/oracle-video.tsx` :
+
+```ts
+const VIDEO_SRC: Record<VideoPhase, string> = {
+  stand: "/videos/prediction-stand.mp4",
+  start: "/videos/prediction-start.mp4",
+  ended: "/videos/prediction-ended.mp4",
+};
+```
 
 ## Specs techniques
 
@@ -26,28 +37,6 @@ Chaque vidéo tourne en boucle derrière la carte de prophétie.
 
 - Fond principal : `#0a0a0f` (noir profond)
 - Lueurs : `#7c3aed` (violet oracle) / `#9d5cf0` (violet clair)
-- Idle : particules violettes lentes
-- Launch : traînées d'énergie violettes montantes
-- Active : orbe pulsant entre vert (`#10b981`) et rouge (`#ef4444`) selon le ratio YES/NO
-- Reveal : flash blanc → pluie dorée (`#f59e0b`) si victoire, voile rouge si défaite
-
-## Intégration dans le code
-
-Les vidéos sont lues par le composant `OracleCharacter` :
-
-```tsx
-<video
-  src={`/videos/oracle-${state}.mp4`}
-  autoPlay
-  loop
-  muted
-  playsInline
-  className="absolute inset-0 h-full w-full object-cover"
-/>
-```
-
-Les 4 états mappent directement :
-- `idle` → `oracle-idle.mp4`
-- `launch` → `oracle-launch.mp4`
-- `active` → `oracle-active.mp4`
-- `reveal` → `oracle-reveal.mp4`
+- Stand : particules violettes lentes
+- Start : traînées d'énergie violettes montantes, orbe pulsant
+- Ended : flash blanc → pluie dorée (`#f59e0b`) si victoire, voile rouge si défaite

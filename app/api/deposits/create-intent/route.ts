@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { handleApiError, requireUser } from "@/lib/auth/guards";
+import { handleApiError, requireUserFromRequest } from "@/lib/auth/guards";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import {
   buildTransakWidgetUrl,
@@ -20,7 +20,7 @@ const BodySchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const user = await requireUser();
+    const user = await requireUserFromRequest(req);
     const parsed = BodySchema.safeParse(await req.json());
     if (!parsed.success) {
       throw new AppError("bad_request", parsed.error.message, 400);

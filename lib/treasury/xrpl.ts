@@ -230,6 +230,42 @@ export async function getRecentIncomingRlusd(
   return results;
 }
 
+export type TxConfirmation =
+  | { status: "validated"; success: boolean; resultCode: string }
+  | { status: "pending" }
+  | { status: "not_found" };
+
+export async function getTransactionStatus(
+  txHash: string,
+): Promise<TxConfirmation> {
+  try {
+    const client = await getClient();
+    const response = await client.request({
+      command: "tx",
+      transaction: txHash,
+    });
+    const result = response.result as {
+      validated?: boolean;
+      meta?: { TransactionResult?: string } | string;
+    };
+    if (!result.validated) return { status: "pending" };
+    const meta = result.meta;
+    const code =
+      typeof meta === "object" && meta !== null && "TransactionResult" in meta
+        ? (meta as { TransactionResult: string }).TransactionResult
+        : "tefUNKNOWN";
+    return {
+      status: "validated",
+      success: code === "tesSUCCESS",
+      resultCode: code,
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("txnNotFound")) return { status: "not_found" };
+    return { status: "pending" };
+  }
+}
+
 export async function getNetworkStatus(): Promise<NetworkStatus> {
   try {
     const client = await getClient();

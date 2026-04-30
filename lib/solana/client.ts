@@ -26,8 +26,13 @@ function getTreasuryKeypair(): Keypair {
   if (!env.SOLANA_TREASURY_PRIVATE_KEY) {
     throw new AppError("sol_not_configured", "Solana treasury not configured", 503);
   }
-  const decoded = bs58.decode(env.SOLANA_TREASURY_PRIVATE_KEY);
-  return Keypair.fromSecretKey(decoded);
+  try {
+    const decoded = bs58.decode(env.SOLANA_TREASURY_PRIVATE_KEY);
+    return Keypair.fromSecretKey(decoded);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "invalid treasury secret";
+    throw new AppError("sol_treasury_invalid", msg, 500);
+  }
 }
 
 export async function getTreasuryBalance(): Promise<number> {

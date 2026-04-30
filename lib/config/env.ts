@@ -11,24 +11,21 @@ const EnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: urlOrDefault("http://localhost:3000"),
 
   NEXT_PUBLIC_SUPABASE_URL: urlOrDefault("http://localhost:54321"),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().default("anon-key-placeholder"),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().default("service-role-placeholder"),
-  DATABASE_URL: z.string().default("postgres://user:pass@localhost:5432/nostradameme"),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().default(""),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().default(""),
+  DATABASE_URL: z.string().default(""),
 
-  NEXT_PUBLIC_PRIVY_APP_ID: z.string().default("privy-app-id-placeholder"),
-  PRIVY_APP_SECRET: z.string().default("privy-secret-placeholder"),
+  NEXT_PUBLIC_PRIVY_APP_ID: z.string().default(""),
+  PRIVY_APP_SECRET: z.string().default(""),
 
-  NEXT_PUBLIC_TRANSAK_API_KEY: z.string().default("transak-api-placeholder"),
-  TRANSAK_SECRET_KEY: z.string().default("transak-secret-placeholder"),
+  NEXT_PUBLIC_TRANSAK_API_KEY: z.string().default(""),
+  TRANSAK_SECRET_KEY: z.string().default(""),
   TRANSAK_ENV: z.enum(["staging", "production"]).default("staging"),
 
-  XRPL_TREASURY_SEED: z.string().default("sEdV1LAxqRZ1x2YhLNKtZ5dY8zKpB9S"),
-  XRPL_TREASURY_ADDRESS: z
-    .string()
-    .default("rTreasuryPlaceholderAddressFake00"),
-  NEXT_PUBLIC_XRPL_TREASURY_ADDRESS: z
-    .string()
-    .default(""),
+  XRPL_TREASURY_SEED: z.string().default(""),
+  XRPL_TREASURY_ADDRESS: z.string().default(""),
+  NEXT_PUBLIC_XRPL_TREASURY_ADDRESS: z.string().default(""),
+  NEXT_PUBLIC_XAMAN_API_KEY: z.string().default(""),
 
   COINGECKO_API_KEY: z.string().default(""),
   COINGECKO_BASE_URL: urlOrDefault("https://api.coingecko.com/api/v3"),
@@ -39,7 +36,7 @@ const EnvSchema = z.object({
     .default("false")
     .transform((v) => v === "true"),
   BLOCKED_COUNTRIES: z.string().default(""),
-  CRON_SECRET: z.string().default("local-cron-secret"),
+  CRON_SECRET: z.string().default(""),
 
   FEATURE_ENABLE_PAYOUTS: z
     .string()
@@ -78,7 +75,10 @@ const parsed = EnvSchema.safeParse({
   TRANSAK_ENV: process.env.TRANSAK_ENV,
   XRPL_TREASURY_SEED: process.env.XRPL_TREASURY_SEED,
   XRPL_TREASURY_ADDRESS: process.env.XRPL_TREASURY_ADDRESS,
-  NEXT_PUBLIC_XRPL_TREASURY_ADDRESS: process.env.NEXT_PUBLIC_XRPL_TREASURY_ADDRESS ?? process.env.XRPL_TREASURY_ADDRESS,
+  NEXT_PUBLIC_XRPL_TREASURY_ADDRESS:
+    process.env.NEXT_PUBLIC_XRPL_TREASURY_ADDRESS ??
+    process.env.XRPL_TREASURY_ADDRESS,
+  NEXT_PUBLIC_XAMAN_API_KEY: process.env.NEXT_PUBLIC_XAMAN_API_KEY,
   COINGECKO_API_KEY: process.env.COINGECKO_API_KEY,
   COINGECKO_BASE_URL: process.env.COINGECKO_BASE_URL,
   APP_MODE: process.env.APP_MODE,
@@ -105,6 +105,33 @@ if (!parsed.success) {
 export const env: Env = parsed.success
   ? parsed.data
   : (EnvSchema.parse({}) as Env);
+
+// In production, fail loudly when critical secrets are missing rather than
+// silently falling back to placeholder values that lead to runtime errors.
+// Run only on the server to avoid bundling secret keys into the client check.
+const isServer = typeof window === "undefined";
+const isProd = process.env.NODE_ENV === "production";
+const isBuild = process.env.NEXT_PHASE === "phase-production-build";
+if (isServer && isProd && !isBuild) {
+  const required: Array<keyof Env> = [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "NEXT_PUBLIC_PRIVY_APP_ID",
+    "PRIVY_APP_SECRET",
+    "CRON_SECRET",
+  ];
+  const missing = required.filter((k) => !env[k] || String(env[k]).length === 0);
+  if (env.REAL_MONEY_ENABLED) {
+    if (!env.XRPL_TREASURY_SEED) missing.push("XRPL_TREASURY_SEED");
+    if (!env.XRPL_TREASURY_ADDRESS) missing.push("XRPL_TREASURY_ADDRESS");
+  }
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables in production: ${missing.join(", ")}`,
+    );
+  }
+}
 
 export function blockedCountries(): string[] {
   return env.BLOCKED_COUNTRIES.split(",")

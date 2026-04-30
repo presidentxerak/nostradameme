@@ -48,11 +48,11 @@ export function BetSheet({
   useEffect(() => {
     if (!open) return;
     setError(null);
-    fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana,ripple&vs_currencies=usd")
+    fetch("/api/prices?ids=solana,ripple")
       .then((r) => r.json())
-      .then((d: { solana?: { usd?: number }; ripple?: { usd?: number } }) => {
-        if (d.solana?.usd) setSolPrice(d.solana.usd);
-        if (d.ripple?.usd) setXrpPrice(d.ripple.usd);
+      .then((d: { prices?: { solana?: number; ripple?: number } }) => {
+        if (d.prices?.solana) setSolPrice(d.prices.solana);
+        if (d.prices?.ripple) setXrpPrice(d.prices.ripple);
       })
       .catch(() => undefined);
   }, [open]);

@@ -3,6 +3,7 @@ import { handleApiError } from "@/lib/auth/guards";
 import { verifyPrivyAccessToken } from "@/lib/privy/server";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { AppError } from "@/lib/utils/errors";
+import { setPrivyCookie } from "@/lib/auth/privy-cookie";
 import type { ProfileRow } from "@/types/db";
 
 export const runtime = "nodejs";
@@ -20,6 +21,9 @@ export async function POST(req: Request) {
       throw new AppError("invalid_token", "Invalid Privy token", 401);
     }
     const privyUserId = verified.userId;
+    // Persist the access token in an httpOnly cookie so SSR layouts can
+    // identify the user without a separate API round-trip.
+    await setPrivyCookie(token);
     const admin = getAdminSupabase();
 
     // Check if profile already exists for this Privy user.

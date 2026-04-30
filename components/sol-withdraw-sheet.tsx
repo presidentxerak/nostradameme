@@ -25,10 +25,10 @@ export function SolWithdrawSheet({ open, onOpenChange, balance }: SolWithdrawShe
   const [txSig, setTxSig] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd")
+    fetch("/api/prices?ids=solana")
       .then((r) => r.json())
-      .then((d: { solana?: { usd?: number } }) => {
-        if (d.solana?.usd) setSolPrice(d.solana.usd);
+      .then((d: { prices?: { solana?: number } }) => {
+        if (d.prices?.solana) setSolPrice(d.prices.solana);
       })
       .catch(() => undefined);
   }, [open]);
