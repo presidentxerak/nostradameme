@@ -1,51 +1,104 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-// Countries that ban or heavily restrict online crypto betting/gambling.
-// Sources: FATF, local gambling/crypto regulations as of 2026.
+// Countries where binary options / crypto prediction markets / crypto gambling
+// are illegal or require a license we don't hold.
+// Sources: ESMA, FCA, CFTC, ASIC, CSA, FATF, national regulators (2025-2026).
 const BLOCKED_COUNTRIES = new Set([
-  "US", // United States — state-by-state, federally restricted
-  "CN", // China — crypto + gambling banned
-  "IN", // India — crypto betting restricted
-  "KP", // North Korea — OFAC sanctioned
-  "IR", // Iran — OFAC sanctioned
-  "SY", // Syria — OFAC sanctioned
-  "CU", // Cuba — OFAC sanctioned
-  "RU", // Russia — crypto gambling banned
+  // --- OFAC sanctioned ---
+  "US", // United States — CFTC requires registration for prediction markets
+  "KP", // North Korea
+  "IR", // Iran
+  "SY", // Syria
+  "CU", // Cuba
+  "RU", // Russia
   "BY", // Belarus
-  "MM", // Myanmar — sanctioned
-  "AF", // Afghanistan — crypto banned
-  "IQ", // Iraq — gambling illegal
-  "LY", // Libya — sanctioned
-  "SD", // Sudan — sanctioned
+  "MM", // Myanmar
+  "LY", // Libya
+  "SD", // Sudan
+  "SS", // South Sudan
   "SO", // Somalia
   "YE", // Yemen
-  "VE", // Venezuela — sanctions
+  "VE", // Venezuela
+  "NI", // Nicaragua
+  "CF", // Central African Republic
+  "CD", // DR Congo
+  // --- EU — ESMA binary options ban (all 27 member states) ---
+  "AT", // Austria
+  "BE", // Belgium — Polymarket fully blocked
+  "BG", // Bulgaria
+  "HR", // Croatia
+  "CY", // Cyprus
+  "CZ", // Czech Republic
+  "DK", // Denmark
+  "EE", // Estonia
+  "FI", // Finland
+  "FR", // France — ANJ actively blocking prediction markets
+  "DE", // Germany — GGL classified as illegal gambling
+  "GR", // Greece
+  "HU", // Hungary — nationwide block on prediction markets
+  "IE", // Ireland
+  "IT", // Italy — treated as unlicensed gambling
+  "LV", // Latvia
+  "LT", // Lithuania
+  "LU", // Luxembourg
+  "MT", // Malta
+  "NL", // Netherlands — Kansspelautoriteit ordered shutdown
+  "PL", // Poland — restricted
+  "PT", // Portugal — regulator ordered shutdown
+  "RO", // Romania — ONJN blacklisted prediction markets
+  "SK", // Slovakia
+  "SI", // Slovenia
+  "ES", // Spain
+  "SE", // Sweden
+  // --- EEA (ESMA binary options ban extends) ---
+  "IS", // Iceland
+  "LI", // Liechtenstein
+  "NO", // Norway
+  // --- UK + Commonwealth with binary options ban ---
+  "GB", // United Kingdom — FCA binary options ban + gambling licence required
+  "AU", // Australia — ASIC binary options ban + ACMA blocked prediction markets
+  "CA", // Canada — CSA binary options ban
+  "NZ", // New Zealand — FMA binary options restrictions
+  // --- Asia-Pacific — prediction markets illegal ---
+  "CN", // China — crypto + gambling banned
+  "JP", // Japan — criminal gambling framework
+  "KR", // South Korea — prediction market betting illegal
+  "SG", // Singapore — GRA blocked prediction markets
+  "IN", // India — online betting banned since 2025
+  "VN", // Vietnam — crypto gambling banned
+  "ID", // Indonesia — gambling + crypto restricted
+  "TH", // Thailand — gambling illegal, Polymarket blocked
+  "KH", // Cambodia — online gambling banned
+  "LA", // Laos
   "PK", // Pakistan — crypto betting illegal
   "BD", // Bangladesh — crypto banned
   "NP", // Nepal — crypto banned
+  // --- Middle East — gambling illegal ---
+  "SA", // Saudi Arabia
+  "QA", // Qatar
+  "KW", // Kuwait
+  "AE", // UAE
+  "BH", // Bahrain
+  "OM", // Oman
+  "JO", // Jordan
+  "LB", // Lebanon
+  "IQ", // Iraq
+  // --- Africa — crypto/gambling bans ---
   "DZ", // Algeria — crypto banned
   "MA", // Morocco — crypto banned
   "EG", // Egypt — crypto restricted
   "TN", // Tunisia — crypto banned
-  "QA", // Qatar — gambling illegal
-  "SA", // Saudi Arabia — gambling illegal
-  "KW", // Kuwait — gambling illegal
-  "BH", // Bahrain — gambling restricted
-  "OM", // Oman — gambling illegal
-  "JO", // Jordan — gambling illegal
-  "LB", // Lebanon — gambling restricted
-  "AE", // UAE — gambling illegal (except licensed)
-  "VN", // Vietnam — crypto gambling banned
-  "ID", // Indonesia — gambling + crypto restricted
-  "TH", // Thailand — gambling illegal
-  "LA", // Laos — gambling restricted
-  "KH", // Cambodia — online gambling banned
-  "ZW", // Zimbabwe — crypto restricted
-  "ET", // Ethiopia — gambling restricted
-  "TZ", // Tanzania — crypto restricted
+  "ET", // Ethiopia
+  "TZ", // Tanzania
+  "ZW", // Zimbabwe
+  // --- Americas ---
   "BO", // Bolivia — crypto banned
-  "EC", // Ecuador — crypto restricted
+  "EC", // Ecuador
+  // --- Other ---
   "TR", // Turkey — crypto payments banned
+  "IL", // Israel — binary options completely banned
+  "CH", // Switzerland — prediction markets restricted
+  "AF", // Afghanistan — crypto banned
 ]);
 
 const RATE_LIMIT_WINDOW = 60 * 1000;
